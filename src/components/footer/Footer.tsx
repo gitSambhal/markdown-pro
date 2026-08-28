@@ -10,7 +10,7 @@ import { Sparkles, Radio, CheckCircle, Clock, FileText } from 'lucide-react';
 
 interface FooterProps {
   stats: DocumentStats;
-  activeFile: MarkdownFile;
+  activeFile: MarkdownFile | null;
   theme: DocumentTheme;
   onOpenChangelog: () => void;
 }
@@ -35,12 +35,12 @@ export const Footer: React.FC<FooterProps> = ({
       <div className="flex items-center space-x-4">
         {/* Live sync status */}
         <div className="flex items-center space-x-2">
-          {activeFile.isExternalFile ? (
+          {activeFile?.isExternalFile ? (
             <span className="flex items-center space-x-1.5 text-emerald-400 font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>LIVE FILE SYNC</span>
             </span>
-          ) : (
+          ) : activeFile ? (
             <span
               className="flex items-center space-x-1.5 font-mono"
               style={{ color: theme.textMuted }}
@@ -51,19 +51,29 @@ export const Footer: React.FC<FooterProps> = ({
               />
               <span>LOCAL SYNCED</span>
             </span>
+          ) : (
+            <span
+              className="flex items-center space-x-1.5 font-mono"
+              style={{ color: theme.textMuted }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+              <span>WORKSPACE IDLE</span>
+            </span>
           )}
         </div>
 
-        <div
-          className="hidden sm:flex items-center space-x-3 border-l pl-3"
-          style={{ borderColor: theme.surfaceBorder }}
-        >
-          <span>{stats.wordCount.toLocaleString()} WORDS</span>
-          <span>&bull;</span>
-          <span>{stats.readingTimeMinutes} MIN READ</span>
-          <span>&bull;</span>
-          <span>{stats.characterCount.toLocaleString()} CHARS</span>
-        </div>
+        {activeFile && (
+          <div
+            className="hidden sm:flex items-center space-x-3 border-l pl-3"
+            style={{ borderColor: theme.surfaceBorder }}
+          >
+            <span>{stats.wordCount.toLocaleString()} WORDS</span>
+            <span>&bull;</span>
+            <span>{stats.readingTimeMinutes} MIN READ</span>
+            <span>&bull;</span>
+            <span>{stats.characterCount.toLocaleString()} CHARS</span>
+          </div>
+        )}
       </div>
 
       {/* Right: Mandatory Developer Attribution & Semantic Version */}
@@ -93,7 +103,7 @@ export const Footer: React.FC<FooterProps> = ({
           title="View Changelog & Release Notes"
         >
           <Sparkles className="w-2.5 h-2.5" />
-          <span>v1.1.4</span>
+          <span>v1.3.0</span>
         </button>
       </div>
     </footer>

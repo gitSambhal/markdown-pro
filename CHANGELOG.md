@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-08-28
+
+### Added
+- **Interactive Landing Workspace & Empty State Experience**:
+  - Beautiful empty workspace screen with drag-and-drop file upload target zone.
+  - Quick action buttons to import files, open live sync file watcher, or create a blank markdown document.
+  - Curated markdown template gallery (System Architecture, Math & KaTeX, Feature Showcase, Developer Guide) for one-click exploration.
+  - Feature highlight chips for diagrams, math equations, multi-themes, and spacebar QuickLook.
+- **Unrestricted File Deletion**:
+  - Users can delete all documents including the last remaining file in the workspace.
+  - When the last document is deleted, the app gracefully transitions to the clean Landing Workspace without errors or phantom files.
+  - Empty state file explorer with quick "Create Doc" button.
+
+---
+
 ## [1.2.0] - 2026-08-28
 
 ### Added

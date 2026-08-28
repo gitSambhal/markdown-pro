@@ -248,118 +248,134 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
         {/* Files List */}
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          {files.map((file) => {
-            const isActive = activeFileId === file.id;
-            const isEditing = editingId === file.id;
-
-            return (
-              <div
-                key={file.id}
-                onClick={() => onSelectFile(file.id)}
-                className="group relative flex items-center justify-between p-2.5 rounded-xl text-xs cursor-pointer transition-all border"
-                style={{
-                  backgroundColor: isActive
-                    ? `${theme.accent}18`
-                    : 'transparent',
-                  borderColor: isActive
-                    ? `${theme.accent}40`
-                    : 'transparent',
-                  color: isActive ? theme.heading : theme.textMuted,
-                  fontWeight: isActive ? 600 : 400,
-                }}
+          {files.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-48 px-3 text-center">
+              <FileCode className="w-8 h-8 opacity-30 mb-2" style={{ color: theme.accent }} />
+              <div className="text-xs font-semibold" style={{ color: theme.heading }}>No Documents</div>
+              <p className="text-[11px] mt-1 mb-3" style={{ color: theme.textMuted }}>
+                Your workspace is currently empty.
+              </p>
+              <button
+                onClick={onNewFile}
+                className="px-3 py-1.5 text-xs font-medium rounded-lg text-white shadow-xs transition-opacity hover:opacity-90 flex items-center gap-1.5"
+                style={{ backgroundColor: theme.accent }}
               >
-                <div className="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
-                  <div className="shrink-0">
-                    {file.isExternalFile ? (
-                      <span title="Live Synced External File">
-                        <Radio className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      </span>
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create Doc</span>
+              </button>
+            </div>
+          ) : (
+            files.map((file) => {
+              const isActive = activeFileId === file.id;
+              const isEditing = editingId === file.id;
+
+              return (
+                <div
+                  key={file.id}
+                  onClick={() => onSelectFile(file.id)}
+                  className="group relative flex items-center justify-between p-2.5 rounded-xl text-xs cursor-pointer transition-all border"
+                  style={{
+                    backgroundColor: isActive
+                      ? `${theme.accent}18`
+                      : 'transparent',
+                    borderColor: isActive
+                      ? `${theme.accent}40`
+                      : 'transparent',
+                    color: isActive ? theme.heading : theme.textMuted,
+                    fontWeight: isActive ? 600 : 400,
+                  }}
+                >
+                  <div className="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
+                    <div className="shrink-0">
+                      {file.isExternalFile ? (
+                        <span title="Live Synced External File">
+                          <Radio className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        </span>
+                      ) : (
+                        <FileCode
+                          className="w-3.5 h-3.5"
+                          style={{ color: isActive ? theme.accent : theme.textMuted }}
+                        />
+                      )}
+                    </div>
+
+                    {isEditing ? (
+                      <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="text"
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveRename(file.id);
+                            if (e.key === 'Escape') setEditingId(null);
+                          }}
+                          autoFocus
+                          className="w-full px-1.5 py-0.5 text-xs border rounded focus:outline-none"
+                          style={{
+                            backgroundColor: theme.codeBg,
+                            borderColor: theme.accent,
+                            color: theme.text,
+                          }}
+                        />
+                        <button
+                          onClick={() => handleSaveRename(file.id)}
+                          className="p-1 text-emerald-400 hover:text-emerald-300"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="p-1 hover:opacity-80"
+                          style={{ color: theme.textMuted }}
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     ) : (
-                      <FileCode
-                        className="w-3.5 h-3.5"
-                        style={{ color: isActive ? theme.accent : theme.textMuted }}
-                      />
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className="truncate"
+                          style={{ color: isActive ? theme.heading : theme.text }}
+                        >
+                          {file.name}
+                        </div>
+                        <div
+                          className="text-[10px] flex items-center gap-2 mt-0.5 font-mono"
+                          style={{ color: theme.textMuted, opacity: 0.8 }}
+                        >
+                          <span>{(file.content.length / 1024).toFixed(1)} KB</span>
+                          <span>&bull;</span>
+                          <span>{new Date(file.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </div>
                     )}
                   </div>
 
-                  {isEditing ? (
-                    <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="text"
-                        value={editingName}
-                        onChange={(e) => setEditingName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSaveRename(file.id);
-                          if (e.key === 'Escape') setEditingId(null);
-                        }}
-                        autoFocus
-                        className="w-full px-1.5 py-0.5 text-xs border rounded focus:outline-none"
-                        style={{
-                          backgroundColor: theme.codeBg,
-                          borderColor: theme.accent,
-                          color: theme.text,
-                        }}
-                      />
+                  {/* Hover Actions */}
+                  {!isEditing && (
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* Spacebar QuickLook Trigger */}
                       <button
-                        onClick={() => handleSaveRename(file.id)}
-                        className="p-1 text-emerald-400 hover:text-emerald-300"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="p-1 hover:opacity-80"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onQuickLook(file);
+                        }}
+                        className="p-1 rounded hover:opacity-80 transition-colors"
                         style={{ color: theme.textMuted }}
+                        title="QuickLook (Space)"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <Eye className="w-3.5 h-3.5" />
                       </button>
-                    </div>
-                  ) : (
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className="truncate"
-                        style={{ color: isActive ? theme.heading : theme.text }}
+
+                      <button
+                        onClick={(e) => handleStartRename(file, e)}
+                        className="p-1 rounded hover:opacity-80 transition-colors"
+                        style={{ color: theme.textMuted }}
+                        title="Rename"
                       >
-                        {file.name}
-                      </div>
-                      <div
-                        className="text-[10px] flex items-center gap-2 mt-0.5 font-mono"
-                        style={{ color: theme.textMuted, opacity: 0.8 }}
-                      >
-                        <span>{(file.content.length / 1024).toFixed(1)} KB</span>
-                        <span>&bull;</span>
-                        <span>{new Date(file.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
 
-                {/* Hover Actions */}
-                {!isEditing && (
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* Spacebar QuickLook Trigger */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onQuickLook(file);
-                      }}
-                      className="p-1 rounded hover:opacity-80 transition-colors"
-                      style={{ color: theme.textMuted }}
-                      title="QuickLook (Space)"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      onClick={(e) => handleStartRename(file, e)}
-                      className="p-1 rounded hover:opacity-80 transition-colors"
-                      style={{ color: theme.textMuted }}
-                      title="Rename"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-
-                    {files.length > 1 && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -371,12 +387,12 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* QuickLook Finder Hint Footer */}
@@ -412,44 +428,52 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleConfirmDelete}
           title="Delete Document"
-          maxWidth="sm"
+          maxWidth="md"
         >
-          <div className="space-y-4 text-sm" style={{ color: theme.text }}>
-            <div className="flex items-center gap-3 p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-rose-200">
-              <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
-              <div>Are you sure you want to delete <span className="font-semibold font-mono">{deleteTarget.name}</span>?</div>
-            </div>
-            <p className="text-xs leading-relaxed" style={{ color: theme.textMuted }}>
-              This action will remove the document from your local workspace.
-            </p>
-            <div
-              className="flex items-center justify-between pt-2 border-t text-xs"
-              style={{ borderColor: theme.surfaceBorder }}
-            >
-              <span className="text-[10px] flex items-center gap-1.5" style={{ color: theme.textMuted }}>
-                <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono" style={{ borderColor: theme.surfaceBorder }}>Esc</kbd> Cancel
-                <span className="opacity-40">&bull;</span>
-                <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono" style={{ borderColor: theme.surfaceBorder }}>Enter</kbd> Confirm
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setDeleteTarget(null)}
-                  className="px-3.5 py-2 text-xs font-medium rounded-lg transition-colors border"
-                  style={{
-                    backgroundColor: theme.codeBg,
-                    borderColor: theme.surfaceBorder,
-                    color: theme.text,
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirmDelete}
-                  className="px-3.5 py-2 text-xs font-medium text-white bg-rose-600 hover:bg-rose-500 rounded-lg transition-colors shadow-sm"
-                >
-                  Delete Permanently
-                </button>
+          <div className="space-y-4 text-sm">
+            {/* Warning Box */}
+            <div className="flex items-start gap-3.5 p-3.5 rounded-xl bg-rose-950/30 border border-rose-500/25">
+              <div className="p-2 rounded-lg bg-rose-500/15 text-rose-400 border border-rose-500/30 shrink-0 mt-0.5">
+                <AlertTriangle className="w-4 h-4" />
               </div>
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="font-semibold text-slate-100 text-sm">
+                  Delete this document?
+                </div>
+                <div className="text-xs text-slate-300">
+                  Are you sure you want to permanently remove this file from your workspace?
+                </div>
+                <div className="pt-1">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950/80 border border-slate-700/80 font-mono text-xs text-rose-300 max-w-full truncate font-medium">
+                    <FileCode className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <span className="truncate">{deleteTarget.name}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs leading-relaxed text-slate-400">
+              This action is immediate and cannot be undone. Any unsaved edits will be permanently discarded.
+            </p>
+
+            {/* Modal Actions Footer - Clean right-aligned buttons without cramped keyboard badges */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 text-xs font-medium rounded-xl border border-slate-700/80 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-slate-600 whitespace-nowrap cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 active:bg-rose-700 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-rose-500 whitespace-nowrap cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                <span>Delete Permanently</span>
+              </button>
             </div>
           </div>
         </Modal>

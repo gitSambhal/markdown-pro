@@ -38,7 +38,7 @@ import {
 } from 'lucide-react';
 
 interface TopNavbarProps {
-  activeFile: MarkdownFile;
+  activeFile: MarkdownFile | null;
   theme: DocumentTheme;
   onThemeChange: (themeId: ThemeId) => void;
   viewMode: ViewMode;
@@ -88,7 +88,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   const [isExportMenuOpen, setIsExportMenuOpen] = useState<boolean>(false);
   const [isWidthMenuOpen, setIsWidthMenuOpen] = useState<boolean>(false);
   const [isEditingTitle, setIsEditingTitle] = useState<boolean>(false);
-  const [titleInput, setTitleInput] = useState<string>(activeFile.name);
+  const [titleInput, setTitleInput] = useState<string>(activeFile?.name || 'Markdown Viewer Pro');
 
   const themeMenuRef = useRef<HTMLDivElement>(null);
   const exportMenuRef = useRef<HTMLDivElement>(null);
@@ -96,8 +96,8 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 
   // Synchronize title on active file change
   useEffect(() => {
-    setTitleInput(activeFile.name);
-  }, [activeFile.name]);
+    setTitleInput(activeFile?.name || 'Markdown Viewer Pro');
+  }, [activeFile?.name]);
 
   // Click outside to close dropdowns
   useEffect(() => {
@@ -117,7 +117,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   }, []);
 
   const handleTitleSubmit = () => {
-    if (titleInput.trim() && titleInput !== activeFile.name) {
+    if (activeFile && titleInput.trim() && titleInput !== activeFile.name) {
       let finalName = titleInput.trim();
       if (!finalName.endsWith('.md') && !finalName.endsWith('.markdown')) {
         finalName += '.md';
@@ -141,20 +141,22 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
     >
       {/* Left Section: Logo Badge, Sidebar Toggle & Breadcrumb Title */}
       <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
-        {/* Toggle File Explorer */}
-        <button
-          id="toggle-file-sidebar-btn"
-          onClick={onToggleFiles}
-          className="p-1.5 rounded-lg transition-colors border"
-          style={{
-            backgroundColor: isFilesOpen ? `${theme.accent}20` : 'transparent',
-            borderColor: isFilesOpen ? `${theme.accent}40` : 'transparent',
-            color: isFilesOpen ? theme.accent : theme.textMuted,
-          }}
-          title="Toggle Files Explorer (Cmd/Ctrl + B)"
-        >
-          <Menu className="w-4 h-4" />
-        </button>
+        {/* Toggle File Explorer (only when active document exists) */}
+        {activeFile && (
+          <button
+            id="toggle-file-sidebar-btn"
+            onClick={onToggleFiles}
+            className="p-1.5 rounded-lg transition-colors border"
+            style={{
+              backgroundColor: isFilesOpen ? `${theme.accent}20` : 'transparent',
+              borderColor: isFilesOpen ? `${theme.accent}40` : 'transparent',
+              color: isFilesOpen ? theme.accent : theme.textMuted,
+            }}
+            title="Toggle Files Explorer (Cmd/Ctrl + B)"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+        )}
 
         {/* Brand Logo Badge */}
         <div
@@ -166,109 +168,131 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 
         {/* Breadcrumb Navigation & Document Title */}
         <nav className="text-xs sm:text-sm flex items-center space-x-1.5 sm:space-x-2 min-w-0">
-          <span className="hidden sm:inline font-medium" style={{ color: theme.textMuted }}>Documents</span>
-          <span className="hidden sm:inline" style={{ color: theme.textMuted, opacity: 0.6 }}>/</span>
-          {isEditingTitle ? (
-            <input
-              id="document-title-input"
-              type="text"
-              value={titleInput}
-              onChange={(e) => setTitleInput(e.target.value)}
-              onBlur={handleTitleSubmit}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleTitleSubmit();
-                if (e.key === 'Escape') {
-                  setTitleInput(activeFile.name);
-                  setIsEditingTitle(false);
-                }
-              }}
-              autoFocus
-              className="px-2 py-0.5 text-xs font-medium border rounded focus:outline-none w-36 sm:w-48"
-              style={{
-                backgroundColor: theme.codeBg,
-                borderColor: theme.accent,
-                color: theme.text,
-              }}
-            />
-          ) : (
-            <button
-              onClick={() => setIsEditingTitle(true)}
-              className="group flex items-center gap-1.5 text-left text-xs sm:text-sm font-medium transition-colors truncate max-w-[140px] sm:max-w-[220px] md:max-w-[280px]"
-              style={{ color: theme.heading }}
-              title="Click to rename document"
-            >
-              <span className="truncate">{activeFile.name}</span>
-              <Edit3 className="w-3 h-3 opacity-0 group-hover:opacity-100 shrink-0" style={{ color: theme.textMuted }} />
-            </button>
-          )}
+          {activeFile ? (
+            <>
+              <span className="hidden sm:inline font-medium" style={{ color: theme.textMuted }}>Documents</span>
+              <span className="hidden sm:inline" style={{ color: theme.textMuted, opacity: 0.6 }}>/</span>
+              {isEditingTitle ? (
+                <input
+                  id="document-title-input"
+                  type="text"
+                  value={titleInput}
+                  onChange={(e) => setTitleInput(e.target.value)}
+                  onBlur={handleTitleSubmit}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleTitleSubmit();
+                    if (e.key === 'Escape') {
+                      setTitleInput(activeFile.name);
+                      setIsEditingTitle(false);
+                    }
+                  }}
+                  autoFocus
+                  className="px-2 py-0.5 text-xs font-medium border rounded focus:outline-none w-36 sm:w-48"
+                  style={{
+                    backgroundColor: theme.codeBg,
+                    borderColor: theme.accent,
+                    color: theme.text,
+                  }}
+                />
+              ) : (
+                <button
+                  onClick={() => setIsEditingTitle(true)}
+                  className="group flex items-center gap-1.5 text-left text-xs sm:text-sm font-medium transition-colors truncate max-w-[140px] sm:max-w-[220px] md:max-w-[280px]"
+                  style={{ color: theme.heading }}
+                  title="Click to rename document"
+                >
+                  <span className="truncate">{activeFile.name}</span>
+                  <Edit3 className="w-3 h-3 opacity-0 group-hover:opacity-100 shrink-0" style={{ color: theme.textMuted }} />
+                </button>
+              )}
 
-          {/* Live Sync Pulse Badge */}
-          {activeFile.isExternalFile && (
-            <span
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono shrink-0 ml-1"
-              style={{
-                backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                borderColor: 'rgba(16, 185, 129, 0.3)',
-                color: '#10b981',
-              }}
-            >
-              <Radio className="w-2.5 h-2.5 animate-pulse text-emerald-500" />
-              <span className="hidden lg:inline">Live Sync</span>
-            </span>
+              {/* Live Sync Pulse Badge */}
+              {activeFile.isExternalFile && (
+                <span
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono shrink-0 ml-1"
+                  style={{
+                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                    borderColor: 'rgba(16, 185, 129, 0.3)',
+                    color: '#10b981',
+                  }}
+                >
+                  <Radio className="w-2.5 h-2.5 animate-pulse text-emerald-500" />
+                  <span className="hidden lg:inline">Live Sync</span>
+                </span>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-xs sm:text-sm" style={{ color: theme.heading }}>
+                Markdown Viewer Pro
+              </span>
+              <span
+                className="text-[10px] px-2 py-0.5 rounded-full border font-mono font-medium hidden sm:inline-block"
+                style={{
+                  backgroundColor: `${theme.accent}12`,
+                  borderColor: `${theme.accent}30`,
+                  color: theme.accent,
+                }}
+              >
+                Workspace Home
+              </span>
+            </div>
           )}
         </nav>
       </div>
 
-      {/* Center Section: View Mode Selector */}
-      <div
-        className="hidden xl:flex items-center border rounded-full p-1 transition-colors"
-        style={{
-          backgroundColor: theme.codeBg,
-          borderColor: theme.surfaceBorder,
-        }}
-      >
-        <button
-          onClick={() => onViewModeChange('view')}
-          className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
+      {/* Center Section: View Mode Selector (Only visible when document is active) */}
+      {activeFile && (
+        <div
+          className="hidden xl:flex items-center border rounded-full p-1 transition-colors"
           style={{
-            backgroundColor: viewMode === 'view' ? theme.accent : 'transparent',
-            color: viewMode === 'view' ? '#ffffff' : theme.textMuted,
-            fontWeight: viewMode === 'view' ? 600 : 500,
+            backgroundColor: theme.codeBg,
+            borderColor: theme.surfaceBorder,
           }}
-          title="Reader View"
         >
-          <Eye className="w-3.5 h-3.5" />
-          <span>Reader</span>
-        </button>
+          <button
+            onClick={() => onViewModeChange('view')}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
+            style={{
+              backgroundColor: viewMode === 'view' ? theme.accent : 'transparent',
+              color: viewMode === 'view' ? '#ffffff' : theme.textMuted,
+              fontWeight: viewMode === 'view' ? 600 : 500,
+            }}
+            title="Reader View"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Reader</span>
+          </button>
 
-        <button
-          onClick={() => onViewModeChange('split')}
-          className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
-          style={{
-            backgroundColor: viewMode === 'split' ? theme.accent : 'transparent',
-            color: viewMode === 'split' ? '#ffffff' : theme.textMuted,
-            fontWeight: viewMode === 'split' ? 600 : 500,
-          }}
-          title="Live Split View (Side-by-Side)"
-        >
-          <Columns className="w-3.5 h-3.5" />
-          <span>Split</span>
-        </button>
+          <button
+            onClick={() => onViewModeChange('split')}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
+            style={{
+              backgroundColor: viewMode === 'split' ? theme.accent : 'transparent',
+              color: viewMode === 'split' ? '#ffffff' : theme.textMuted,
+              fontWeight: viewMode === 'split' ? 600 : 500,
+            }}
+            title="Live Split View (Side-by-Side)"
+          >
+            <Columns className="w-3.5 h-3.5" />
+            <span>Split</span>
+          </button>
 
-        <button
-          onClick={() => onViewModeChange('edit')}
-          className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
-          style={{
-            backgroundColor: viewMode === 'edit' ? theme.accent : 'transparent',
-            color: viewMode === 'edit' ? '#ffffff' : theme.textMuted,
-            fontWeight: viewMode === 'edit' ? 600 : 500,
-          }}
-          title="Editor View"
-        >
-          <Edit3 className="w-3.5 h-3.5" />
-          <span>Editor</span>
-        </button>
-      </div>
+          <button
+            onClick={() => onViewModeChange('edit')}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
+            style={{
+              backgroundColor: viewMode === 'edit' ? theme.accent : 'transparent',
+              color: viewMode === 'edit' ? '#ffffff' : theme.textMuted,
+              fontWeight: viewMode === 'edit' ? 600 : 500,
+            }}
+            title="Editor View"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Editor</span>
+          </button>
+        </div>
+      )}
 
       {/* Right Section: Theme Capsule, Zoom, QuickLook, Export, TOC Toggle */}
       <div className="flex items-center space-x-2 sm:space-x-4">
@@ -403,222 +427,227 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           </div>
         </div>
 
-        {/* Zoom Section */}
-        <div
-          className="flex items-center space-x-2 border-l pl-3 sm:pl-4"
-          style={{ borderColor: theme.surfaceBorder }}
-        >
-          <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: theme.textMuted }}>ZOOM</span>
-          <div
-            className="flex items-center border rounded-lg p-0.5"
-            style={{
-              backgroundColor: theme.codeBg,
-              borderColor: theme.surfaceBorder,
-            }}
-          >
-            <button
-              onClick={() => onFontSizeChange(Math.max(12, fontSize - 1))}
-              className="p-1 rounded transition-colors"
-              style={{ color: theme.textMuted }}
-              title="Decrease Font Size"
-            >
-              <ZoomOut className="w-3 h-3" />
-            </button>
-            <span
-              className="px-1.5 text-xs font-mono font-semibold select-none"
-              style={{ color: theme.accent }}
-            >
-              {Math.round((fontSize / 16) * 100)}%
-            </span>
-            <button
-              onClick={() => onFontSizeChange(Math.min(26, fontSize + 1))}
-              className="p-1 rounded transition-colors"
-              style={{ color: theme.textMuted }}
-              title="Increase Font Size"
-            >
-              <ZoomIn className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-
-        {/* QuickLook Finder Trigger */}
-        <button
-          id="top-quicklook-btn"
-          onClick={onQuickLook}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 border rounded-lg text-xs transition-colors"
-          style={{
-            backgroundColor: theme.codeBg,
-            borderColor: theme.surfaceBorder,
-            color: theme.text,
-          }}
-          title="QuickLook Spacebar Preview"
-        >
-          <Eye className="w-3.5 h-3.5" style={{ color: theme.accent }} />
-          <span className="hidden lg:inline text-xs">QuickLook</span>
-          <span
-            className="hidden sm:inline px-1 py-0.2 rounded border text-[10px] font-mono"
-            style={{
-              backgroundColor: theme.surface,
-              borderColor: theme.surfaceBorder,
-              color: theme.accent,
-            }}
-          >
-            Space
-          </span>
-        </button>
-
-        {/* Container Width Dropdown */}
-        <div ref={widthMenuRef} className="relative hidden lg:block">
-          <button
-            onClick={() => setIsWidthMenuOpen(!isWidthMenuOpen)}
-            className="p-2 border rounded-lg transition-colors"
-            style={{
-              backgroundColor: theme.codeBg,
-              borderColor: theme.surfaceBorder,
-              color: theme.textMuted,
-            }}
-            title="Page Reading Width"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-          </button>
-
-          {isWidthMenuOpen && (
+        {/* Document-Specific Actions (Zoom, QuickLook, Width, Export, TOC Toggle) */}
+        {activeFile && (
+          <>
+            {/* Zoom Section */}
             <div
-              className="absolute right-0 mt-2 w-44 border rounded-xl shadow-2xl p-1.5 z-50"
+              className="flex items-center space-x-2 border-l pl-3 sm:pl-4"
+              style={{ borderColor: theme.surfaceBorder }}
+            >
+              <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: theme.textMuted }}>ZOOM</span>
+              <div
+                className="flex items-center border rounded-lg p-0.5"
+                style={{
+                  backgroundColor: theme.codeBg,
+                  borderColor: theme.surfaceBorder,
+                }}
+              >
+                <button
+                  onClick={() => onFontSizeChange(Math.max(12, fontSize - 1))}
+                  className="p-1 rounded transition-colors"
+                  style={{ color: theme.textMuted }}
+                  title="Decrease Font Size"
+                >
+                  <ZoomOut className="w-3 h-3" />
+                </button>
+                <span
+                  className="px-1.5 text-xs font-mono font-semibold select-none"
+                  style={{ color: theme.accent }}
+                >
+                  {Math.round((fontSize / 16) * 100)}%
+                </span>
+                <button
+                  onClick={() => onFontSizeChange(Math.min(26, fontSize + 1))}
+                  className="p-1 rounded transition-colors"
+                  style={{ color: theme.textMuted }}
+                  title="Increase Font Size"
+                >
+                  <ZoomIn className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
+            {/* QuickLook Finder Trigger */}
+            <button
+              id="top-quicklook-btn"
+              onClick={onQuickLook}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 border rounded-lg text-xs transition-colors"
               style={{
-                backgroundColor: theme.surface,
+                backgroundColor: theme.codeBg,
                 borderColor: theme.surfaceBorder,
                 color: theme.text,
               }}
+              title="QuickLook Spacebar Preview"
             >
-              <div
-                className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider border-b"
+              <Eye className="w-3.5 h-3.5" style={{ color: theme.accent }} />
+              <span className="hidden lg:inline text-xs">QuickLook</span>
+              <span
+                className="hidden sm:inline px-1 py-0.2 rounded border text-[10px] font-mono"
                 style={{
+                  backgroundColor: theme.surface,
+                  borderColor: theme.surfaceBorder,
+                  color: theme.accent,
+                }}
+              >
+                Space
+              </span>
+            </button>
+
+            {/* Container Width Dropdown */}
+            <div ref={widthMenuRef} className="relative hidden lg:block">
+              <button
+                onClick={() => setIsWidthMenuOpen(!isWidthMenuOpen)}
+                className="p-2 border rounded-lg transition-colors"
+                style={{
+                  backgroundColor: theme.codeBg,
                   borderColor: theme.surfaceBorder,
                   color: theme.textMuted,
                 }}
+                title="Page Reading Width"
               >
-                Container Width
-              </div>
-              <div className="py-1 space-y-0.5 text-xs">
-                {(
-                  [
-                    { id: 'narrow', label: 'Narrow (720px)' },
-                    { id: 'standard', label: 'Standard (860px)' },
-                    { id: 'wide', label: 'Wide (1100px)' },
-                    { id: 'full', label: 'Full Width' },
-                  ] as const
-                ).map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      onContainerWidthChange(item.id);
-                      setIsWidthMenuOpen(false);
-                    }}
-                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors"
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+              </button>
+
+              {isWidthMenuOpen && (
+                <div
+                  className="absolute right-0 mt-2 w-44 border rounded-xl shadow-2xl p-1.5 z-50"
+                  style={{
+                    backgroundColor: theme.surface,
+                    borderColor: theme.surfaceBorder,
+                    color: theme.text,
+                  }}
+                >
+                  <div
+                    className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider border-b"
                     style={{
-                      backgroundColor: containerWidth === item.id ? theme.accent : 'transparent',
-                      color: containerWidth === item.id ? '#ffffff' : theme.text,
+                      borderColor: theme.surfaceBorder,
+                      color: theme.textMuted,
                     }}
                   >
-                    <span>{item.label}</span>
-                    {containerWidth === item.id && <Check className="w-3.5 h-3.5 text-white" />}
-                  </button>
-                ))}
-              </div>
+                    Container Width
+                  </div>
+                  <div className="py-1 space-y-0.5 text-xs">
+                    {(
+                      [
+                        { id: 'narrow', label: 'Narrow (720px)' },
+                        { id: 'standard', label: 'Standard (860px)' },
+                        { id: 'wide', label: 'Wide (1100px)' },
+                        { id: 'full', label: 'Full Width' },
+                      ] as const
+                    ).map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          onContainerWidthChange(item.id);
+                          setIsWidthMenuOpen(false);
+                        }}
+                        className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors"
+                        style={{
+                          backgroundColor: containerWidth === item.id ? theme.accent : 'transparent',
+                          color: containerWidth === item.id ? '#ffffff' : theme.text,
+                        }}
+                      >
+                        <span>{item.label}</span>
+                        {containerWidth === item.id && <Check className="w-3.5 h-3.5 text-white" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Export Menu Dropdown */}
-        <div ref={exportMenuRef} className="relative">
-          <button
-            id="export-menu-btn"
-            onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 font-medium text-xs rounded-lg shadow-sm transition-colors text-white"
-            style={{
-              backgroundColor: theme.accent,
-            }}
-            title="Export Options"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Export</span>
-            <ChevronDown className="w-3 h-3 opacity-80" />
-          </button>
-
-          {isExportMenuOpen && (
-            <div
-              className="absolute right-0 mt-2 w-52 border rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100"
-              style={{
-                backgroundColor: theme.surface,
-                borderColor: theme.surfaceBorder,
-                color: theme.text,
-              }}
-            >
-              <div
-                className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border-b"
+            {/* Export Menu Dropdown */}
+            <div ref={exportMenuRef} className="relative">
+              <button
+                id="export-menu-btn"
+                onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                className="flex items-center gap-1.5 px-3 py-1.5 font-medium text-xs rounded-lg shadow-sm transition-colors text-white"
                 style={{
-                  borderColor: theme.surfaceBorder,
-                  color: theme.textMuted,
+                  backgroundColor: theme.accent,
                 }}
+                title="Export Options"
               >
-                Export Document
-              </div>
-              <div className="py-1 space-y-0.5 text-xs">
-                <button
-                  onClick={() => {
-                    onExportMarkdown();
-                    setIsExportMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors hover:opacity-80"
-                  style={{ color: theme.text }}
-                >
-                  <FileCode className="w-4 h-4 text-sky-400" />
-                  <span>Download .MD File</span>
-                </button>
+                <Download className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Export</span>
+                <ChevronDown className="w-3 h-3 opacity-80" />
+              </button>
 
-                <button
-                  onClick={() => {
-                    onExportHtml();
-                    setIsExportMenuOpen(false);
+              {isExportMenuOpen && (
+                <div
+                  className="absolute right-0 mt-2 w-52 border rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100"
+                  style={{
+                    backgroundColor: theme.surface,
+                    borderColor: theme.surfaceBorder,
+                    color: theme.text,
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors hover:opacity-80"
-                  style={{ color: theme.text }}
                 >
-                  <FileDown className="w-4 h-4" style={{ color: theme.accent }} />
-                  <span>Export Standalone HTML</span>
-                </button>
+                  <div
+                    className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border-b"
+                    style={{
+                      borderColor: theme.surfaceBorder,
+                      color: theme.textMuted,
+                    }}
+                  >
+                    Export Document
+                  </div>
+                  <div className="py-1 space-y-0.5 text-xs">
+                    <button
+                      onClick={() => {
+                        onExportMarkdown();
+                        setIsExportMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors hover:opacity-80"
+                      style={{ color: theme.text }}
+                    >
+                      <FileCode className="w-4 h-4 text-sky-400" />
+                      <span>Download .MD File</span>
+                    </button>
 
-                <button
-                  onClick={() => {
-                    onPrintPdf();
-                    setIsExportMenuOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors hover:opacity-80"
-                  style={{ color: theme.text }}
-                >
-                  <Printer className="w-4 h-4 text-emerald-400" />
-                  <span>Print / Save as PDF</span>
-                </button>
-              </div>
+                    <button
+                      onClick={() => {
+                        onExportHtml();
+                        setIsExportMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors hover:opacity-80"
+                      style={{ color: theme.text }}
+                    >
+                      <FileDown className="w-4 h-4" style={{ color: theme.accent }} />
+                      <span>Export Standalone HTML</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        onPrintPdf();
+                        setIsExportMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors hover:opacity-80"
+                      style={{ color: theme.text }}
+                    >
+                      <Printer className="w-4 h-4 text-emerald-400" />
+                      <span>Print / Save as PDF</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Toggle Table of Contents Sidebar */}
-        <button
-          id="toggle-toc-sidebar-btn"
-          onClick={onToggleToc}
-          className="p-2 rounded-lg transition-colors border"
-          style={{
-            backgroundColor: isTocOpen ? `${theme.accent}20` : 'transparent',
-            borderColor: isTocOpen ? `${theme.accent}40` : 'transparent',
-            color: isTocOpen ? theme.accent : theme.textMuted,
-          }}
-          title="Toggle Table of Contents"
-        >
-          <ListTree className="w-4 h-4" />
-        </button>
+            {/* Toggle Table of Contents Sidebar */}
+            <button
+              id="toggle-toc-sidebar-btn"
+              onClick={onToggleToc}
+              className="p-2 rounded-lg transition-colors border"
+              style={{
+                backgroundColor: isTocOpen ? `${theme.accent}20` : 'transparent',
+                borderColor: isTocOpen ? `${theme.accent}40` : 'transparent',
+                color: isTocOpen ? theme.accent : theme.textMuted,
+              }}
+              title="Toggle Table of Contents"
+            >
+              <ListTree className="w-4 h-4" />
+            </button>
+          </>
+        )}
       </div>
     </header>
   );

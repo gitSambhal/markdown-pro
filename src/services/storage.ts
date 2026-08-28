@@ -15,14 +15,22 @@ const STORAGE_KEY_FONT_SIZE = 'md_viewer_font_size_v1';
 const STORAGE_KEY_CONTAINER_WIDTH = 'md_viewer_container_width_v1';
 const STORAGE_KEY_SIDEBAR_OPEN = 'md_viewer_sidebar_open_v1';
 const STORAGE_KEY_OPEN_TABS = 'md_viewer_open_tabs_v1';
+const STORAGE_KEY_INITIALIZED = 'md_viewer_initialized_v1';
 
 export const StorageService = {
   loadFiles(): MarkdownFile[] {
     try {
+      const initialized = localStorage.getItem(STORAGE_KEY_INITIALIZED);
       const data = localStorage.getItem(STORAGE_KEY_FILES);
+
+      if (!initialized && !data) {
+        localStorage.setItem(STORAGE_KEY_INITIALIZED, 'true');
+        return SAMPLE_DOCUMENTS;
+      }
+
       if (data) {
         const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       }
@@ -34,6 +42,7 @@ export const StorageService = {
 
   saveFiles(files: MarkdownFile[]) {
     try {
+      localStorage.setItem(STORAGE_KEY_INITIALIZED, 'true');
       // Don't store huge objects or circular handles into localStorage
       const storableFiles = files.map(f => ({
         id: f.id,
@@ -51,7 +60,7 @@ export const StorageService = {
   },
 
   getActiveFileId(): string {
-    return localStorage.getItem(STORAGE_KEY_ACTIVE_ID) || SAMPLE_DOCUMENTS[0].id;
+    return localStorage.getItem(STORAGE_KEY_ACTIVE_ID) || '';
   },
 
   setActiveFileId(id: string) {

@@ -24,6 +24,7 @@ import { FileExplorer } from './components/sidebar/FileExplorer';
 import { TableOfContents } from './components/sidebar/TableOfContents';
 import { MarkdownRenderer } from './components/viewer/MarkdownRenderer';
 import { LiveEditor } from './components/editor/LiveEditor';
+import { LandingWorkspace } from './components/viewer/LandingWorkspace';
 import { ZoomModal } from './components/common/ZoomModal';
 import { QuickLookModal } from './components/quicklook/QuickLookModal';
 import { ChangelogModal } from './components/common/ChangelogModal';
@@ -38,7 +39,7 @@ export default function App() {
   const [openTabIds, setOpenTabIds] = useState<string[]>(() => {
     const savedTabs = StorageService.getOpenTabIds();
     const active = StorageService.getActiveFileId();
-    if (!savedTabs.includes(active)) {
+    if (active && !savedTabs.includes(active)) {
       return [...savedTabs, active];
     }
     return savedTabs;
@@ -66,20 +67,22 @@ export default function App() {
     [themeId]
   );
 
-  // Active file object
-  const activeFile = useMemo(() => {
-    return files.find((f) => f.id === activeFileId) || files[0] || {
-      id: 'fallback-doc',
-      name: 'Untitled.md',
-      content: '# Welcome to Markdown Viewer Pro\n\nStart typing here...',
-      updatedAt: Date.now(),
-      sizeBytes: 50,
-    };
+  // Active file object (or null if no file exists)
+  const activeFile = useMemo<MarkdownFile | null>(() => {
+    if (files.length === 0) return null;
+    const found = files.find((f) => f.id === activeFileId);
+    if (found) return found;
+    return files[0] || null;
   }, [files, activeFileId]);
 
   // Document Metrics & Table of Contents
-  const toc = useMemo(() => extractTableOfContents(activeFile.content), [activeFile.content]);
-  const stats = useMemo(() => computeDocumentStats(activeFile.content), [activeFile.content]);
+  const toc = useMemo(() => {
+    return activeFile ? extractTableOfContents(activeFile.content) : [];
+  }, [activeFile?.content]);
+
+  const stats = useMemo(() => {
+    return computeDocumentStats(activeFile?.content || '');
+  }, [activeFile?.content]);
 
   // Persist files and preferences on updates
   useEffect(() => {
@@ -119,6 +122,9 @@ export default function App() {
     if (activeFile?.name) {
       document.title = `${activeFile.name} — Markdown Viewer Pro`;
       setNativeWindowTitle(activeFile.name);
+    } else {
+      document.title = 'Markdown Viewer Pro';
+      setNativeWindowTitle('Markdown Viewer Pro');
     }
   }, [activeFile?.name]);
 
@@ -137,7 +143,7 @@ export default function App() {
   const lastModifiedRef = useRef<number>(0);
 
   useEffect(() => {
-    if (!activeFile.isExternalFile || !activeFile.fileHandle) {
+    if (!activeFile || !activeFile.isExternalFile || !activeFile.fileHandle) {
       fileHandleRef.current = null;
       return;
     }
@@ -147,7 +153,7 @@ export default function App() {
 
     const interval = setInterval(async () => {
       try {
-        if (!fileHandleRef.current) return;
+        if (!fileHandleRef.current || !activeFile) return;
         const fileObj = await fileHandleRef.current.getFile();
         if (fileObj.lastModified > lastModifiedRef.current) {
           lastModifiedRef.current = fileObj.lastModified;
@@ -195,24 +201,19 @@ export default function App() {
       }
       setOpenTabIds((prev) => {
         const filtered = prev.filter((tabId) => tabId !== id);
-        if (filtered.length === 0) {
-          // Keep at least one tab open
-          const fallback = files.find((f) => f.id !== id) || files[0];
-          if (fallback) {
-            setActiveFileId(fallback.id);
-            return [fallback.id];
-          }
-          return prev;
-        }
         if (activeFileId === id) {
-          const closedIndex = prev.indexOf(id);
-          const nextIndex = Math.min(closedIndex, filtered.length - 1);
-          setActiveFileId(filtered[nextIndex]);
+          if (filtered.length > 0) {
+            const closedIndex = prev.indexOf(id);
+            const nextIndex = Math.min(closedIndex, filtered.length - 1);
+            setActiveFileId(filtered[nextIndex]);
+          } else {
+            setActiveFileId('');
+          }
         }
         return filtered;
       });
     },
-    [activeFileId, files]
+    [activeFileId]
   );
 
   const handleCloseOtherTabs = useCallback(
@@ -225,12 +226,10 @@ export default function App() {
   );
 
   const handleCloseAllTabs = useCallback(() => {
-    if (files.length > 0) {
-      setOpenTabIds([files[0].id]);
-      setActiveFileId(files[0].id);
-    }
-    addToast('info', 'Tabs Reset', 'Showing single active document.');
-  }, [files, addToast]);
+    setOpenTabIds([]);
+    setActiveFileId('');
+    addToast('info', 'All Tabs Closed', 'Workspace in landing mode.');
+  }, [addToast]);
 
   const handleNewFile = useCallback(() => {
     const untitledCount = files.filter((f) => f.name.startsWith('Untitled')).length + 1;
@@ -281,6 +280,21 @@ export default function App() {
           'Ready for viewing and analysis.'
         );
       }
+    },
+    [addToast]
+  );
+
+  const handleLoadSample = useCallback(
+    (sample: MarkdownFile) => {
+      const newDoc: MarkdownFile = {
+        ...sample,
+        id: 'doc-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6),
+        updatedAt: Date.now(),
+      };
+      setFiles((prev) => [newDoc, ...prev]);
+      setOpenTabIds((prev) => [newDoc.id, ...prev]);
+      setActiveFileId(newDoc.id);
+      addToast('success', 'Loaded Template', newDoc.name);
     },
     [addToast]
   );
@@ -351,8 +365,8 @@ export default function App() {
     (id: string) => {
       setFiles((prev) => {
         const filtered = prev.filter((f) => f.id !== id);
-        if (activeFileId === id && filtered.length > 0) {
-          setActiveFileId(filtered[0].id);
+        if (activeFileId === id) {
+          setActiveFileId(filtered.length > 0 ? filtered[0].id : '');
         }
         return filtered;
       });
@@ -364,6 +378,7 @@ export default function App() {
 
   const handleUpdateContent = useCallback(
     (newContent: string) => {
+      if (!activeFileId) return;
       setFiles((prev) =>
         prev.map((f) =>
           f.id === activeFileId
@@ -377,13 +392,22 @@ export default function App() {
 
   const handleQuickLook = useCallback(
     (fileToPreview?: MarkdownFile) => {
-      setQuickLookFile(fileToPreview || activeFile);
+      const target = fileToPreview || activeFile;
+      if (target) {
+        setQuickLookFile(target);
+      } else {
+        addToast('info', 'No document to preview', 'Open or create a document first.');
+      }
     },
-    [activeFile]
+    [activeFile, addToast]
   );
 
   // Export handlers
   const handleExportMarkdown = useCallback(() => {
+    if (!activeFile) {
+      addToast('warning', 'No document open', 'Create or open a document to export.');
+      return;
+    }
     const blob = new Blob([activeFile.content], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -395,6 +419,10 @@ export default function App() {
   }, [activeFile, addToast]);
 
   const handleExportHtml = useCallback(() => {
+    if (!activeFile) {
+      addToast('warning', 'No document open', 'Create or open a document to export.');
+      return;
+    }
     const htmlBundle = generateExportedHtml(activeFile, currentTheme, fontSize);
     const blob = new Blob([htmlBundle], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -407,11 +435,15 @@ export default function App() {
   }, [activeFile, currentTheme, fontSize, addToast]);
 
   const handlePrintPdf = useCallback(() => {
+    if (!activeFile) {
+      addToast('warning', 'No document open', 'Create or open a document to print.');
+      return;
+    }
     addToast('info', 'Preparing Print Preview', 'Opening system print dialog...');
     setTimeout(() => {
       window.print();
     }, 300);
-  }, [addToast]);
+  }, [activeFile, addToast]);
 
   // Global Keyboard Shortcuts (Tabs, Popups, Modals, Workspace)
   useEffect(() => {
@@ -571,103 +603,122 @@ export default function App() {
         onToggleFiles={() => setIsFilesOpen(!isFilesOpen)}
         isTocOpen={isTocOpen}
         onToggleToc={() => setIsTocOpen(!isTocOpen)}
-        onQuickLook={() => handleQuickLook(activeFile)}
+        onQuickLook={() => handleQuickLook()}
         onExportMarkdown={handleExportMarkdown}
         onExportHtml={handleExportHtml}
         onPrintPdf={handlePrintPdf}
-        onRename={(newName) => handleRenameFile(activeFile.id, newName)}
+        onRename={(newName) => activeFile && handleRenameFile(activeFile.id, newName)}
         stats={stats}
-        isLiveSyncActive={!!activeFile.isExternalFile}
+        isLiveSyncActive={!!activeFile?.isExternalFile}
         onToast={addToast}
       />
 
       {/* Main Multi-Pane Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left: Files Explorer */}
-        <FileExplorer
-          files={files}
-          activeFileId={activeFile.id}
-          theme={currentTheme}
-          onSelectFile={handleSelectFile}
-          onNewFile={handleNewFile}
-          onImportFiles={handleImportFiles}
-          onWatchDiskFile={handleWatchDiskFile}
-          onRenameFile={handleRenameFile}
-          onDeleteFile={handleDeleteFile}
-          onQuickLook={handleQuickLook}
-          isOpen={isFilesOpen}
-          onToast={addToast}
-        />
-
-        {/* Center: Multi-Tab Bar, Live Editor & Document Viewer */}
-        <main className="flex-1 flex flex-col overflow-hidden relative">
-          {/* Multi-Tab Workspace Header Bar */}
-          <TabBar
+        {/* Left: Files Explorer (Only when a document is active) */}
+        {activeFile && (
+          <FileExplorer
             files={files}
-            openTabIds={openTabIds}
-            activeFileId={activeFile.id}
+            activeFileId={activeFile?.id || ''}
             theme={currentTheme}
-            onSelectTab={handleSelectTab}
-            onCloseTab={handleCloseTab}
-            onCloseOtherTabs={handleCloseOtherTabs}
-            onCloseAllTabs={handleCloseAllTabs}
-            onNewTab={handleNewFile}
-            onOpenShortcuts={() => setIsShortcutsOpen(true)}
+            onSelectFile={handleSelectFile}
+            onNewFile={handleNewFile}
+            onImportFiles={handleImportFiles}
+            onWatchDiskFile={handleWatchDiskFile}
+            onRenameFile={handleRenameFile}
+            onDeleteFile={handleDeleteFile}
             onQuickLook={handleQuickLook}
+            isOpen={isFilesOpen}
+            onToast={addToast}
           />
+        )}
 
-          {/* Editor & Viewport Workspace Area */}
-          <div className="flex-1 flex overflow-hidden relative">
-            {/* Split Mode: Live Editor on the Left */}
-            {(viewMode === 'split' || viewMode === 'edit') && (
-              <div className={`${viewMode === 'split' ? 'w-1/2' : 'w-full'} h-full flex flex-col`}>
-                <LiveEditor
-                  content={activeFile.content}
-                  onChange={handleUpdateContent}
-                  theme={currentTheme}
-                  fontSize={fontSize}
-                />
-              </div>
-            )}
+        {/* Center: Multi-Tab Bar, Live Editor & Document Viewer / Landing Workspace */}
+        <main className="flex-1 flex flex-col overflow-hidden relative">
+          {/* Multi-Tab Workspace Header Bar (rendered if document is open and tabs exist) */}
+          {activeFile && openTabIds.length > 0 && (
+            <TabBar
+              files={files}
+              openTabIds={openTabIds}
+              activeFileId={activeFile?.id || ''}
+              theme={currentTheme}
+              onSelectTab={handleSelectTab}
+              onCloseTab={handleCloseTab}
+              onCloseOtherTabs={handleCloseOtherTabs}
+              onCloseAllTabs={handleCloseAllTabs}
+              onNewTab={handleNewFile}
+              onOpenShortcuts={() => setIsShortcutsOpen(true)}
+              onQuickLook={handleQuickLook}
+            />
+          )}
 
-            {/* Reader Viewport on the Right / Center */}
-            {(viewMode === 'view' || viewMode === 'split') && (
-              <div
-                id="document-scroll-viewport"
-                className={`${
-                  viewMode === 'split' ? 'w-1/2' : 'w-full'
-                } h-full overflow-y-auto transition-colors duration-150 p-6 sm:p-10 md:p-14`}
-                style={{
-                  backgroundColor: currentTheme.bg,
-                }}
-              >
-                <div className={`mx-auto ${getContainerWidthClass()}`}>
-                  <MarkdownRenderer
+          {/* If no active file is selected / all files deleted, show the Landing Workspace */}
+          {!activeFile ? (
+            <LandingWorkspace
+              theme={currentTheme}
+              onImportFiles={handleImportFiles}
+              onNewFile={handleNewFile}
+              onWatchDiskFile={handleWatchDiskFile}
+              onLoadSample={handleLoadSample}
+              onOpenShortcuts={() => setIsShortcutsOpen(true)}
+              onToast={addToast}
+            />
+          ) : (
+            /* Editor & Viewport Workspace Area */
+            <div className="flex-1 flex overflow-hidden relative">
+              {/* Split Mode: Live Editor on the Left */}
+              {(viewMode === 'split' || viewMode === 'edit') && (
+                <div className={`${viewMode === 'split' ? 'w-1/2' : 'w-full'} h-full flex flex-col`}>
+                  <LiveEditor
                     content={activeFile.content}
+                    onChange={handleUpdateContent}
                     theme={currentTheme}
                     fontSize={fontSize}
-                    onOpenZoom={setZoomData}
-                    onToast={addToast}
                   />
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+
+              {/* Reader Viewport on the Right / Center */}
+              {(viewMode === 'view' || viewMode === 'split') && (
+                <div
+                  id="document-scroll-viewport"
+                  className={`${
+                    viewMode === 'split' ? 'w-1/2' : 'w-full'
+                  } h-full overflow-y-auto transition-colors duration-150 p-6 sm:p-10 md:p-14`}
+                  style={{
+                    backgroundColor: currentTheme.bg,
+                  }}
+                >
+                  <div className={`mx-auto ${getContainerWidthClass()}`}>
+                    <MarkdownRenderer
+                      content={activeFile.content}
+                      theme={currentTheme}
+                      fontSize={fontSize}
+                      onOpenZoom={setZoomData}
+                      onToast={addToast}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </main>
 
         {/* Right: Table of Contents Sidebar */}
-        <TableOfContents
-          toc={toc}
-          stats={stats}
-          theme={currentTheme}
-          isOpen={isTocOpen}
-          onClose={() => setIsTocOpen(false)}
-          onEnsureViewerVisible={() => {
-            if (viewMode === 'edit') {
-              setViewMode('split');
-            }
-          }}
-        />
+        {activeFile && (
+          <TableOfContents
+            toc={toc}
+            stats={stats}
+            theme={currentTheme}
+            isOpen={isTocOpen}
+            onClose={() => setIsTocOpen(false)}
+            onEnsureViewerVisible={() => {
+              if (viewMode === 'edit') {
+                setViewMode('split');
+              }
+            }}
+          />
+        )}
       </div>
 
       {/* Footer Status Bar with Developer Attribution */}
