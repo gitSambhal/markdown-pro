@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.4] - 2026-08-28
+
+### Fixed
+- **Code Block Line Number Positioning in Exported HTML**:
+  - Embedded dedicated flexbox and column-alignment CSS rules (`.code-block-row`, `.code-line-numbers`, `.code-block-pre`) directly in standalone exported HTML stylesheets.
+  - Resolved issue where line numbers rendered vertically stacked above the code in static HTML export viewers by ensuring side-by-side gutter alignment and matching baseline line heights.
+
+---
+
+## [1.1.3] - 2026-08-28
+
+### Fixed
+- **HTML Export Formatting & Block Isolation**:
+  - Fixed erroneous code header injection into data tables by strictly scoping block processing to code containers (`data-block-type="code"`).
+  - Resolved inline code conversion to full block windows in list items and paragraphs.
+  - Stripped invalid outer `<pre>` wrappers around code block containers.
+  - Sanitized Mermaid diagram sources by auto-stripping accidental markdown code fences prior to vector rendering.
+  - Cleaned exported DOM from internal tracking attributes (`data--h-bstatus`, `node`, `data-toc-id`).
+
+---
+
+## [1.1.2] - 2026-08-28
+
+### Fixed
+- **HTML DOM Validation & Hydration Error Fix**: Resolved invalid nesting in `react-markdown` by adding a pass-through `pre` component wrapper and distinguishing inline vs block code without defaulting to `<CodeBlock>` `<div>` elements inside `<p>` or `<strong>` tags.
+
+---
+
+## [1.1.1] - 2026-08-28
+
+### Fixed
+- **Exported HTML Document Button & Styling Fix**: Cleaned up exported standalone HTML bundle by removing non-functional React modal triggers, rendering clean macOS dots, language tags, and standalone Vanilla JS copy buttons with clipboard feedback and full syntax styling.
+- **Table of Contents Smooth Scroll Fix**: Fixed heading ID mismatch caused by per-render slug tracking; added deterministic slug resolution across all heading levels (`h1`-`h6`) and smooth viewport scrolling for both TOC clicks and direct heading anchor links.
+
+---
+
 ## [1.1.0] - 2026-08-28
 
 ### Added

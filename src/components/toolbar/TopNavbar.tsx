@@ -127,10 +127,17 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
     setIsEditingTitle(false);
   };
 
+  const isLight = theme.category === 'light' || theme.category === 'sepia';
+
   return (
     <header
       id="top-navbar"
-      className="h-14 border-b border-slate-800 bg-[#16181D] flex items-center justify-between px-4 sm:px-6 z-40 select-none text-slate-300 shrink-0"
+      className="h-14 border-b flex items-center justify-between px-4 sm:px-6 z-40 select-none shrink-0 transition-colors duration-150"
+      style={{
+        backgroundColor: theme.surface,
+        borderColor: theme.surfaceBorder,
+        color: theme.text,
+      }}
     >
       {/* Left Section: Logo Badge, Sidebar Toggle & Breadcrumb Title */}
       <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
@@ -138,25 +145,29 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         <button
           id="toggle-file-sidebar-btn"
           onClick={onToggleFiles}
-          className={`p-1.5 rounded-lg transition-colors ${
-            isFilesOpen
-              ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
-          }`}
+          className="p-1.5 rounded-lg transition-colors border"
+          style={{
+            backgroundColor: isFilesOpen ? `${theme.accent}20` : 'transparent',
+            borderColor: isFilesOpen ? `${theme.accent}40` : 'transparent',
+            color: isFilesOpen ? theme.accent : theme.textMuted,
+          }}
           title="Toggle Files Explorer (Cmd/Ctrl + B)"
         >
           <Menu className="w-4 h-4" />
         </button>
 
         {/* Brand Logo Badge */}
-        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
+          style={{ backgroundColor: theme.accent }}
+        >
           <span className="text-white font-bold text-xs tracking-tighter font-mono">M↓</span>
         </div>
 
         {/* Breadcrumb Navigation & Document Title */}
         <nav className="text-xs sm:text-sm flex items-center space-x-1.5 sm:space-x-2 min-w-0">
-          <span className="text-slate-500 hidden sm:inline font-medium">Documents</span>
-          <span className="text-slate-600 hidden sm:inline">/</span>
+          <span className="hidden sm:inline font-medium" style={{ color: theme.textMuted }}>Documents</span>
+          <span className="hidden sm:inline" style={{ color: theme.textMuted, opacity: 0.6 }}>/</span>
           {isEditingTitle ? (
             <input
               id="document-title-input"
@@ -172,23 +183,36 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                 }
               }}
               autoFocus
-              className="px-2 py-0.5 text-xs font-medium bg-[#0D0E12] border border-indigo-500 rounded text-slate-200 focus:outline-none w-36 sm:w-48"
+              className="px-2 py-0.5 text-xs font-medium border rounded focus:outline-none w-36 sm:w-48"
+              style={{
+                backgroundColor: theme.codeBg,
+                borderColor: theme.accent,
+                color: theme.text,
+              }}
             />
           ) : (
             <button
               onClick={() => setIsEditingTitle(true)}
-              className="group flex items-center gap-1.5 text-left text-xs sm:text-sm font-medium text-slate-200 hover:text-indigo-300 transition-colors truncate max-w-[140px] sm:max-w-[220px] md:max-w-[280px]"
+              className="group flex items-center gap-1.5 text-left text-xs sm:text-sm font-medium transition-colors truncate max-w-[140px] sm:max-w-[220px] md:max-w-[280px]"
+              style={{ color: theme.heading }}
               title="Click to rename document"
             >
               <span className="truncate">{activeFile.name}</span>
-              <Edit3 className="w-3 h-3 opacity-0 group-hover:opacity-100 text-slate-500 shrink-0" />
+              <Edit3 className="w-3 h-3 opacity-0 group-hover:opacity-100 shrink-0" style={{ color: theme.textMuted }} />
             </button>
           )}
 
           {/* Live Sync Pulse Badge */}
           {activeFile.isExternalFile && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono shrink-0 ml-1">
-              <Radio className="w-2.5 h-2.5 animate-pulse text-emerald-400" />
+            <span
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-mono shrink-0 ml-1"
+              style={{
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                borderColor: 'rgba(16, 185, 129, 0.3)',
+                color: '#10b981',
+              }}
+            >
+              <Radio className="w-2.5 h-2.5 animate-pulse text-emerald-500" />
               <span className="hidden lg:inline">Live Sync</span>
             </span>
           )}
@@ -196,14 +220,21 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
       </div>
 
       {/* Center Section: View Mode Selector */}
-      <div className="hidden xl:flex items-center bg-[#0D0E12] border border-slate-800 rounded-full p-1">
+      <div
+        className="hidden xl:flex items-center border rounded-full p-1 transition-colors"
+        style={{
+          backgroundColor: theme.codeBg,
+          borderColor: theme.surfaceBorder,
+        }}
+      >
         <button
           onClick={() => onViewModeChange('view')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
-            viewMode === 'view'
-              ? 'bg-indigo-600 text-white shadow-sm font-semibold'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
+          className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
+          style={{
+            backgroundColor: viewMode === 'view' ? theme.accent : 'transparent',
+            color: viewMode === 'view' ? '#ffffff' : theme.textMuted,
+            fontWeight: viewMode === 'view' ? 600 : 500,
+          }}
           title="Reader View"
         >
           <Eye className="w-3.5 h-3.5" />
@@ -212,11 +243,12 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 
         <button
           onClick={() => onViewModeChange('split')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
-            viewMode === 'split'
-              ? 'bg-indigo-600 text-white shadow-sm font-semibold'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
+          className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
+          style={{
+            backgroundColor: viewMode === 'split' ? theme.accent : 'transparent',
+            color: viewMode === 'split' ? '#ffffff' : theme.textMuted,
+            fontWeight: viewMode === 'split' ? 600 : 500,
+          }}
           title="Live Split View (Side-by-Side)"
         >
           <Columns className="w-3.5 h-3.5" />
@@ -225,11 +257,12 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
 
         <button
           onClick={() => onViewModeChange('edit')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
-            viewMode === 'edit'
-              ? 'bg-indigo-600 text-white shadow-sm font-semibold'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
+          className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all"
+          style={{
+            backgroundColor: viewMode === 'edit' ? theme.accent : 'transparent',
+            color: viewMode === 'edit' ? '#ffffff' : theme.textMuted,
+            fontWeight: viewMode === 'edit' ? 600 : 500,
+          }}
           title="Editor View"
         >
           <Edit3 className="w-3.5 h-3.5" />
@@ -240,53 +273,66 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
       {/* Right Section: Theme Capsule, Zoom, QuickLook, Export, TOC Toggle */}
       <div className="flex items-center space-x-2 sm:space-x-4">
         {/* Quick Theme Capsule */}
-        <div className="hidden md:flex items-center bg-[#0D0E12] p-1 rounded-full border border-slate-800">
+        <div
+          className="hidden md:flex items-center p-1 rounded-full border transition-colors"
+          style={{
+            backgroundColor: theme.codeBg,
+            borderColor: theme.surfaceBorder,
+          }}
+        >
+          <button
+            onClick={() => onThemeChange('github-light')}
+            className="px-3 py-1 text-[10px] rounded-full transition-all"
+            style={{
+              backgroundColor: theme.id === 'github-light' ? theme.accent : 'transparent',
+              color: theme.id === 'github-light' ? '#ffffff' : theme.textMuted,
+              fontWeight: theme.id === 'github-light' ? 600 : 500,
+            }}
+          >
+            Light
+          </button>
           <button
             onClick={() => onThemeChange('github-dark')}
-            className={`px-3 py-1 text-[10px] rounded-full transition-all ${
-              theme.id === 'github-dark'
-                ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className="px-3 py-1 text-[10px] rounded-full transition-all"
+            style={{
+              backgroundColor: theme.id === 'github-dark' ? theme.accent : 'transparent',
+              color: theme.id === 'github-dark' ? '#ffffff' : theme.textMuted,
+              fontWeight: theme.id === 'github-dark' ? 600 : 500,
+            }}
           >
-            GitHub
+            Dark
           </button>
           <button
             onClick={() => onThemeChange('dracula')}
-            className={`px-3 py-1 text-[10px] rounded-full transition-all ${
-              theme.id === 'dracula'
-                ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className="px-3 py-1 text-[10px] rounded-full transition-all"
+            style={{
+              backgroundColor: theme.id === 'dracula' ? theme.accent : 'transparent',
+              color: theme.id === 'dracula' ? '#ffffff' : theme.textMuted,
+              fontWeight: theme.id === 'dracula' ? 600 : 500,
+            }}
           >
             Dracula
           </button>
           <button
             onClick={() => onThemeChange('nord')}
-            className={`px-3 py-1 text-[10px] rounded-full transition-all ${
-              theme.id === 'nord'
-                ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className="px-3 py-1 text-[10px] rounded-full transition-all"
+            style={{
+              backgroundColor: theme.id === 'nord' ? theme.accent : 'transparent',
+              color: theme.id === 'nord' ? '#ffffff' : theme.textMuted,
+              fontWeight: theme.id === 'nord' ? 600 : 500,
+            }}
           >
             Nord
-          </button>
-          <button
-            onClick={() => onThemeChange('tokyo-night')}
-            className={`px-3 py-1 text-[10px] rounded-full transition-all ${
-              theme.id === 'tokyo-night'
-                ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Tokyo
           </button>
 
           {/* More Themes Dropdown Trigger */}
           <div ref={themeMenuRef} className="relative">
             <button
               onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-              className="px-2 py-1 text-[10px] text-slate-400 hover:text-white flex items-center gap-0.5 rounded-full hover:bg-slate-800 transition-colors"
+              className="px-2 py-1 text-[10px] flex items-center gap-0.5 rounded-full transition-colors"
+              style={{
+                color: theme.textMuted,
+              }}
               title="All 12 Curated Themes"
             >
               <Palette className="w-3 h-3" />
@@ -294,10 +340,23 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             </button>
 
             {isThemeMenuOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-[#111318] border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800 flex items-center justify-between">
+              <div
+                className="absolute right-0 mt-2 w-64 border rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100"
+                style={{
+                  backgroundColor: theme.surface,
+                  borderColor: theme.surfaceBorder,
+                  color: theme.text,
+                }}
+              >
+                <div
+                  className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider border-b flex items-center justify-between"
+                  style={{
+                    borderColor: theme.surfaceBorder,
+                    color: theme.textMuted,
+                  }}
+                >
                   <span>12 Curated Themes</span>
-                  <Sparkles className="w-3 h-3 text-indigo-400" />
+                  <Sparkles className="w-3 h-3" style={{ color: theme.accent }} />
                 </div>
                 <div className="max-h-72 overflow-y-auto py-1 space-y-0.5">
                   {THEME_LIST.map((th) => {
@@ -310,11 +369,12 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                           setIsThemeMenuOpen(false);
                           onToast('info', `Theme: ${th.name}`, 'Applied typography and color palette.');
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors ${
-                          isCurrent
-                            ? 'bg-indigo-600 text-white font-semibold'
-                            : 'text-slate-300 hover:bg-slate-800'
-                        }`}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors"
+                        style={{
+                          backgroundColor: isCurrent ? theme.accent : 'transparent',
+                          color: isCurrent ? '#ffffff' : theme.text,
+                          fontWeight: isCurrent ? 600 : 400,
+                        }}
                       >
                         <div className="flex items-center gap-2.5">
                           <div className="flex items-center gap-1 p-0.5 rounded-full border border-black/20">
@@ -333,7 +393,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                           </div>
                           <span>{th.name}</span>
                         </div>
-                        {isCurrent && <Check className="w-3.5 h-3.5" />}
+                        {isCurrent && <Check className="w-3.5 h-3.5 text-white" />}
                       </button>
                     );
                   })}
@@ -343,23 +403,37 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           </div>
         </div>
 
-        {/* Sophisticated Dark Zoom Section */}
-        <div className="flex items-center space-x-2 border-l border-slate-800 pl-3 sm:pl-4">
-          <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">ZOOM</span>
-          <div className="flex items-center bg-[#0D0E12] border border-slate-800 rounded-lg p-0.5 text-slate-400">
+        {/* Zoom Section */}
+        <div
+          className="flex items-center space-x-2 border-l pl-3 sm:pl-4"
+          style={{ borderColor: theme.surfaceBorder }}
+        >
+          <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: theme.textMuted }}>ZOOM</span>
+          <div
+            className="flex items-center border rounded-lg p-0.5"
+            style={{
+              backgroundColor: theme.codeBg,
+              borderColor: theme.surfaceBorder,
+            }}
+          >
             <button
               onClick={() => onFontSizeChange(Math.max(12, fontSize - 1))}
-              className="p-1 hover:text-white hover:bg-slate-800 rounded transition-colors"
+              className="p-1 rounded transition-colors"
+              style={{ color: theme.textMuted }}
               title="Decrease Font Size"
             >
               <ZoomOut className="w-3 h-3" />
             </button>
-            <span className="px-1.5 text-xs font-mono text-indigo-400 font-semibold select-none">
+            <span
+              className="px-1.5 text-xs font-mono font-semibold select-none"
+              style={{ color: theme.accent }}
+            >
               {Math.round((fontSize / 16) * 100)}%
             </span>
             <button
               onClick={() => onFontSizeChange(Math.min(26, fontSize + 1))}
-              className="p-1 hover:text-white hover:bg-slate-800 rounded transition-colors"
+              className="p-1 rounded transition-colors"
+              style={{ color: theme.textMuted }}
               title="Increase Font Size"
             >
               <ZoomIn className="w-3 h-3" />
@@ -371,12 +445,24 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         <button
           id="top-quicklook-btn"
           onClick={onQuickLook}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-[#0D0E12] hover:bg-slate-800 border border-slate-800 hover:border-slate-700 rounded-lg text-xs text-slate-300 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 border rounded-lg text-xs transition-colors"
+          style={{
+            backgroundColor: theme.codeBg,
+            borderColor: theme.surfaceBorder,
+            color: theme.text,
+          }}
           title="QuickLook Spacebar Preview"
         >
-          <Eye className="w-3.5 h-3.5 text-indigo-400" />
+          <Eye className="w-3.5 h-3.5" style={{ color: theme.accent }} />
           <span className="hidden lg:inline text-xs">QuickLook</span>
-          <span className="hidden sm:inline px-1 py-0.2 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-indigo-300">
+          <span
+            className="hidden sm:inline px-1 py-0.2 rounded border text-[10px] font-mono"
+            style={{
+              backgroundColor: theme.surface,
+              borderColor: theme.surfaceBorder,
+              color: theme.accent,
+            }}
+          >
             Space
           </span>
         </button>
@@ -385,15 +471,33 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         <div ref={widthMenuRef} className="relative hidden lg:block">
           <button
             onClick={() => setIsWidthMenuOpen(!isWidthMenuOpen)}
-            className="p-2 bg-[#0D0E12] hover:bg-slate-800 border border-slate-800 hover:border-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors"
+            className="p-2 border rounded-lg transition-colors"
+            style={{
+              backgroundColor: theme.codeBg,
+              borderColor: theme.surfaceBorder,
+              color: theme.textMuted,
+            }}
             title="Page Reading Width"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
           </button>
 
           {isWidthMenuOpen && (
-            <div className="absolute right-0 mt-2 w-44 bg-[#111318] border border-slate-800 rounded-xl shadow-2xl p-1.5 z-50">
-              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+            <div
+              className="absolute right-0 mt-2 w-44 border rounded-xl shadow-2xl p-1.5 z-50"
+              style={{
+                backgroundColor: theme.surface,
+                borderColor: theme.surfaceBorder,
+                color: theme.text,
+              }}
+            >
+              <div
+                className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider border-b"
+                style={{
+                  borderColor: theme.surfaceBorder,
+                  color: theme.textMuted,
+                }}
+              >
                 Container Width
               </div>
               <div className="py-1 space-y-0.5 text-xs">
@@ -411,14 +515,14 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                       onContainerWidthChange(item.id);
                       setIsWidthMenuOpen(false);
                     }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg ${
-                      containerWidth === item.id
-                        ? 'bg-indigo-600 text-white font-medium'
-                        : 'text-slate-300 hover:bg-slate-800'
-                    }`}
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-colors"
+                    style={{
+                      backgroundColor: containerWidth === item.id ? theme.accent : 'transparent',
+                      color: containerWidth === item.id ? '#ffffff' : theme.text,
+                    }}
                   >
                     <span>{item.label}</span>
-                    {containerWidth === item.id && <Check className="w-3.5 h-3.5" />}
+                    {containerWidth === item.id && <Check className="w-3.5 h-3.5 text-white" />}
                   </button>
                 ))}
               </div>
@@ -431,17 +535,33 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
           <button
             id="export-menu-btn"
             onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-lg shadow-sm transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 font-medium text-xs rounded-lg shadow-sm transition-colors text-white"
+            style={{
+              backgroundColor: theme.accent,
+            }}
             title="Export Options"
           >
             <Download className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Export</span>
-            <ChevronDown className="w-3 h-3 text-indigo-200" />
+            <ChevronDown className="w-3 h-3 opacity-80" />
           </button>
 
           {isExportMenuOpen && (
-            <div className="absolute right-0 mt-2 w-52 bg-[#111318] border border-slate-800 rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100">
-              <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+            <div
+              className="absolute right-0 mt-2 w-52 border rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100"
+              style={{
+                backgroundColor: theme.surface,
+                borderColor: theme.surfaceBorder,
+                color: theme.text,
+              }}
+            >
+              <div
+                className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border-b"
+                style={{
+                  borderColor: theme.surfaceBorder,
+                  color: theme.textMuted,
+                }}
+              >
                 Export Document
               </div>
               <div className="py-1 space-y-0.5 text-xs">
@@ -450,7 +570,8 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                     onExportMarkdown();
                     setIsExportMenuOpen(false);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-xl transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors hover:opacity-80"
+                  style={{ color: theme.text }}
                 >
                   <FileCode className="w-4 h-4 text-sky-400" />
                   <span>Download .MD File</span>
@@ -461,9 +582,10 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                     onExportHtml();
                     setIsExportMenuOpen(false);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-xl transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors hover:opacity-80"
+                  style={{ color: theme.text }}
                 >
-                  <FileDown className="w-4 h-4 text-indigo-400" />
+                  <FileDown className="w-4 h-4" style={{ color: theme.accent }} />
                   <span>Export Standalone HTML</span>
                 </button>
 
@@ -472,7 +594,8 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                     onPrintPdf();
                     setIsExportMenuOpen(false);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-slate-200 hover:bg-slate-800 rounded-xl transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors hover:opacity-80"
+                  style={{ color: theme.text }}
                 >
                   <Printer className="w-4 h-4 text-emerald-400" />
                   <span>Print / Save as PDF</span>
@@ -486,11 +609,12 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
         <button
           id="toggle-toc-sidebar-btn"
           onClick={onToggleToc}
-          className={`p-2 rounded-lg transition-colors ${
-            isTocOpen
-              ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
-          }`}
+          className="p-2 rounded-lg transition-colors border"
+          style={{
+            backgroundColor: isTocOpen ? `${theme.accent}20` : 'transparent',
+            borderColor: isTocOpen ? `${theme.accent}40` : 'transparent',
+            color: isTocOpen ? theme.accent : theme.textMuted,
+          }}
           title="Toggle Table of Contents"
         >
           <ListTree className="w-4 h-4" />

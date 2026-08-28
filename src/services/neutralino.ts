@@ -159,6 +159,114 @@ export async function showNativeNotification(title: string, content: string): Pr
 }
 
 /**
+ * Open external web URL in user's default system browser
+ */
+export async function openExternalUrl(url: string): Promise<void> {
+  if (isNativeNeutralino()) {
+    try {
+      await Neutralino.os.open(url);
+      return;
+    } catch (e) {
+      console.warn('Neutralino.os.open failed, falling back to window.open:', e);
+    }
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+/**
+ * Copy text to clipboard natively with web fallback
+ */
+export async function copyTextNative(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+    }
+    if (isNativeNeutralino()) {
+      await Neutralino.clipboard.writeText(text);
+    }
+    return true;
+  } catch (err) {
+    if (isNativeNeutralino()) {
+      try {
+        await Neutralino.clipboard.writeText(text);
+        return true;
+      } catch (e) {
+        console.error('Clipboard native copy error:', e);
+      }
+    }
+    return false;
+  }
+}
+
+/**
+ * Save exported HTML file natively to disk
+ */
+export async function showNativeSaveHtmlDialog(defaultName: string, htmlContent: string): Promise<string | null> {
+  if (!isNativeNeutralino()) {
+    return null;
+  }
+
+  try {
+    const defaultPath = defaultName.endsWith('.html') ? defaultName : `${defaultName}.html`;
+    const selectedPath = await Neutralino.os.showSaveDialog(
+      'Export HTML Document',
+      {
+        defaultPath,
+        filters: [
+          { name: 'HTML Document (*.html)', extensions: ['html', 'htm'] },
+          { name: 'All Files (*.*)', extensions: ['*'] }
+        ]
+      }
+    );
+
+    if (!selectedPath) {
+      return null;
+    }
+
+    await Neutralino.filesystem.writeFile(selectedPath, htmlContent);
+    return selectedPath;
+  } catch (error) {
+    console.error('Failed to export HTML via Neutralino:', error);
+    return null;
+  }
+}
+
+/**
+ * Read native file from disk
+ */
+export async function readNativeFile(filePath: string): Promise<string | null> {
+  if (!isNativeNeutralino()) {
+    return null;
+  }
+
+  try {
+    return await Neutralino.filesystem.readFile(filePath);
+  } catch (error) {
+    console.error('Failed to read native file:', error);
+    return null;
+  }
+}
+
+/**
+ * Reveal file/folder in native OS file manager
+ */
+export async function showInFolder(filePath: string): Promise<void> {
+  if (!isNativeNeutralino()) {
+    return;
+  }
+
+  try {
+    if (typeof (Neutralino.os as any).showFolder === 'function') {
+      await (Neutralino.os as any).showFolder(filePath);
+    } else if (typeof (Neutralino.os as any).open === 'function') {
+      await (Neutralino.os as any).open(filePath);
+    }
+  } catch (error) {
+    console.warn('Neutralino show in folder failed:', error);
+  }
+}
+
+/**
  * Native Window Controls
  */
 export async function nativeMinimizeWindow(): Promise<void> {

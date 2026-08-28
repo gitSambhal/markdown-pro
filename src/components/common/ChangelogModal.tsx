@@ -15,7 +15,7 @@ interface ChangelogModalProps {
 
 export const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="What's New in v1.0.0" maxWidth="2xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="What's New in v1.1.1" maxWidth="2xl">
       <div className="space-y-6 text-slate-300 text-sm leading-relaxed">
         {/* Release Header */}
         <div className="flex items-center justify-between p-4 bg-indigo-950/40 border border-indigo-500/30 rounded-xl">
@@ -24,12 +24,12 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose 
               <Rocket className="w-5 h-5" />
             </div>
             <div>
-              <div className="font-semibold text-white">Markdown Viewer Pro v1.0.0</div>
-              <div className="text-xs text-indigo-300">Initial Production Release</div>
+              <div className="font-semibold text-white">Markdown Viewer Pro v1.1.1</div>
+              <div className="text-xs text-indigo-300">HTML Export Polish & TOC Smooth Scrolling</div>
             </div>
           </div>
           <span className="px-2.5 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-mono rounded-full border border-indigo-500/30">
-            Aug 2026
+            v1.1.1
           </span>
         </div>
 
@@ -37,25 +37,43 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose 
         <div className="space-y-4">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            Core Capabilities
+            Latest Fixes & Enhancements
           </h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 space-y-1">
               <div className="font-semibold text-white text-xs flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-emerald-400" /> Zero-Config Mermaid
+                <Check className="w-3.5 h-3.5 text-emerald-400" /> HTML Export Document Polish
               </div>
               <p className="text-xs text-slate-400">
-                Native flowcharts, sequence diagrams, class, state, Gantt, ER diagrams & git graphs.
+                Exported HTML files now feature clean macOS code headers, working standalone copy buttons, full syntax styles, and no unstyled React UI buttons.
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 space-y-1">
               <div className="font-semibold text-white text-xs flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-emerald-400" /> Spacebar QuickLook
+                <Check className="w-3.5 h-3.5 text-emerald-400" /> Reliable TOC Heading Scroll
               </div>
               <p className="text-xs text-slate-400">
-                Press <kbd className="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-white">Space</kbd> in the file list for an instant macOS Finder style preview.
+                Heading IDs now match 100% deterministically between the outline and document, scrolling smoothly directly to the selected section.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 space-y-1">
+              <div className="font-semibold text-white text-xs flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-400" /> Neutralino.js Desktop Support
+              </div>
+              <p className="text-xs text-slate-400">
+                Lightweight native desktop build pipelines across Windows (.exe), macOS, and Linux.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-800/60 border border-slate-700/60 space-y-1">
+              <div className="font-semibold text-white text-xs flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-400" /> Zero-Config Mermaid & Math
+              </div>
+              <p className="text-xs text-slate-400">
+                Native flowcharts, sequence diagrams, class, state, Gantt, ER diagrams, and KaTeX LaTeX math equations.
               </p>
             </div>
 

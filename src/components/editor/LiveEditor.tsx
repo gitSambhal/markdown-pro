@@ -94,92 +94,117 @@ export const LiveEditor: React.FC<LiveEditorProps> = ({
   return (
     <div
       id="live-editor-container"
-      className="flex flex-col h-full border-r border-slate-800 bg-slate-950/80 overflow-hidden"
+      className="flex flex-col h-full border-r overflow-hidden transition-colors duration-150"
+      style={{
+        backgroundColor: theme.codeBg,
+        borderColor: theme.surfaceBorder,
+      }}
     >
       {/* Formatting Toolbar */}
-      <div className="flex items-center gap-1 p-2 bg-slate-900 border-b border-slate-800 flex-wrap select-none text-slate-300">
+      <div
+        className="flex items-center gap-1 p-2 border-b flex-wrap select-none transition-colors duration-150"
+        style={{
+          backgroundColor: theme.surface,
+          borderColor: theme.surfaceBorder,
+          color: theme.text,
+        }}
+      >
         <button
           onClick={() => insertSnippet('**', '**', 'bold text')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.text }}
           title="Bold (**text**)"
         >
           <Bold className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => insertSnippet('*', '*', 'italic text')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.text }}
           title="Italic (*text*)"
         >
           <Italic className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => insertSnippet('~~', '~~', 'strikethrough text')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.text }}
           title="Strikethrough (~~text~~)"
         >
           <Strikethrough className="w-3.5 h-3.5" />
         </button>
 
-        <div className="h-4 w-[1px] bg-slate-800 mx-1" />
+        <div className="h-4 w-[1px] mx-1" style={{ backgroundColor: theme.surfaceBorder }} />
 
         <button
           onClick={() => insertSnippet('# ', '', 'Heading 1')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.text }}
           title="Heading 1 (#)"
         >
           <Heading1 className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => insertSnippet('## ', '', 'Heading 2')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.text }}
           title="Heading 2 (##)"
         >
           <Heading2 className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => insertSnippet('> ', '', 'Quote text')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.text }}
           title="Blockquote (>)"
         >
           <Quote className="w-3.5 h-3.5" />
         </button>
 
-        <div className="h-4 w-[1px] bg-slate-800 mx-1" />
+        <div className="h-4 w-[1px] mx-1" style={{ backgroundColor: theme.surfaceBorder }} />
 
         <button
           onClick={() => insertSnippet('`', '`', 'code')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.text }}
           title="Inline Code (`code`)"
         >
           <Code className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => insertSnippet('\n```typescript\n', '\n```\n', '// code here')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors font-mono text-[10px]"
+          className="p-1.5 rounded hover:opacity-80 transition-colors font-mono text-[10px]"
+          style={{ color: theme.text }}
           title="Code Block (```)"
         >
           ```
         </button>
         <button
           onClick={() => insertSnippet('[', '](https://suhail.top)', 'link title')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.text }}
           title="Hyperlink [title](url)"
         >
           <LinkIcon className="w-3.5 h-3.5" />
         </button>
 
-        <div className="h-4 w-[1px] bg-slate-800 mx-1" />
+        <div className="h-4 w-[1px] mx-1" style={{ backgroundColor: theme.surfaceBorder }} />
 
         <button
           onClick={handleInsertTable}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-emerald-400 transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.accent }}
           title="Insert Markdown Table"
         >
           <TableIcon className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={handleInsertMermaidFlowchart}
-          className="flex items-center gap-1 px-2 py-1 rounded bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 text-[11px] font-medium transition-colors"
+          className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-colors"
+          style={{
+            backgroundColor: `${theme.accent}18`,
+            color: theme.accent,
+          }}
           title="Insert Mermaid Flowchart"
         >
           <Workflow className="w-3 h-3" />
@@ -187,7 +212,11 @@ export const LiveEditor: React.FC<LiveEditorProps> = ({
         </button>
         <button
           onClick={handleInsertMermaidSequence}
-          className="flex items-center gap-1 px-2 py-1 rounded bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 text-[11px] font-medium transition-colors"
+          className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-colors"
+          style={{
+            backgroundColor: `${theme.accent}18`,
+            color: theme.accent,
+          }}
           title="Insert Mermaid Sequence"
         >
           <Workflow className="w-3 h-3" />
@@ -195,24 +224,27 @@ export const LiveEditor: React.FC<LiveEditorProps> = ({
         </button>
         <button
           onClick={handleInsertMath}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-amber-400 transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.accent }}
           title="Insert LaTeX Math Formula ($$...$$)"
         >
           <Sigma className="w-3.5 h-3.5" />
         </button>
 
-        <div className="h-4 w-[1px] bg-slate-800 mx-1" />
+        <div className="h-4 w-[1px] mx-1" style={{ backgroundColor: theme.surfaceBorder }} />
 
         <button
           onClick={() => insertSnippet('- [ ] ', '', 'Task item')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-sky-400 transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.text }}
           title="Checklist Item (- [ ])"
         >
           <CheckSquare className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => insertSnippet('- ', '', 'Bullet item')}
-          className="p-1.5 rounded hover:bg-slate-800 hover:text-white transition-colors"
+          className="p-1.5 rounded hover:opacity-80 transition-colors"
+          style={{ color: theme.text }}
           title="Bullet List (-)"
         >
           <List className="w-3.5 h-3.5" />
@@ -229,8 +261,10 @@ export const LiveEditor: React.FC<LiveEditorProps> = ({
           spellCheck={false}
           style={{
             fontSize: `${fontSize}px`,
+            backgroundColor: theme.codeBg,
+            color: theme.codeText || theme.text,
           }}
-          className="w-full h-full p-6 bg-slate-950 font-mono text-slate-200 leading-relaxed resize-none focus:outline-none selection:bg-indigo-500/30 selection:text-indigo-200 overflow-y-auto"
+          className="w-full h-full p-6 font-mono leading-relaxed resize-none focus:outline-none overflow-y-auto"
         />
       </div>
     </div>

@@ -63,6 +63,7 @@ export function extractTableOfContents(markdown: string): TocItem[] {
         id: baseSlug,
         text: cleanText,
         level,
+        index: toc.length,
       });
     }
   }

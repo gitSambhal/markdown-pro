@@ -51,8 +51,11 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = ({
 
       const elementId = uniqueIdRef.current;
       
-      // Clean diagram code
-      const cleanCode = code.trim();
+      // Clean diagram code (strip accidental markdown code fences if present)
+      let cleanCode = code.trim();
+      cleanCode = cleanCode.replace(/^```[a-z0-9_-]*\s*\n?/i, '');
+      cleanCode = cleanCode.replace(/\n?```\s*$/i, '');
+      cleanCode = cleanCode.trim();
 
       mermaid
         .render(elementId, cleanCode)
@@ -130,7 +133,8 @@ export const MermaidRenderer: React.FC<MermaidRendererProps> = ({
   return (
     <div
       id={`mermaid-container-${uniqueIdRef.current}`}
-      className="group relative my-6 rounded-xl border transition-all duration-200 overflow-hidden shadow-sm"
+      data-block-type="mermaid"
+      className="mermaid-renderer-wrapper mermaid-renderer group relative my-6 rounded-xl border transition-all duration-200 overflow-hidden shadow-sm"
       style={{
         backgroundColor: theme.codeBg,
         borderColor: theme.codeBorder,

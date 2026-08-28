@@ -6,23 +6,23 @@
 
 @import "tailwindcss";
 
-/* Custom Scrollbar */
+/* Custom Scrollbar using Dynamic Theme Variables */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.4);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: var(--app-surface-border, rgba(100, 116, 139, 0.4));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.6);
+  background: var(--app-accent, rgba(148, 163, 184, 0.6));
 }
 
 /* PrismJS Syntax Highlighting Theme Styles */

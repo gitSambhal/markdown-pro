@@ -53,6 +53,7 @@ export interface MarkdownFile {
   updatedAt: number;
   sizeBytes: number;
   isExternalFile?: boolean;
+  nativePath?: string;
   fileHandle?: any; // FileSystemFileHandle if loaded via File System Access API
   lastModified?: number;
 }
@@ -61,6 +62,7 @@ export interface TocItem {
   id: string;
   text: string;
   level: number;
+  index?: number;
   children?: TocItem[];
 }
 

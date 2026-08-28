@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MarkdownFile } from '../../types';
+import { MarkdownFile, DocumentTheme } from '../../types';
 import {
   FolderOpen,
   FileCode,
@@ -26,6 +26,7 @@ import { isNativeNeutralino, showNativeOpenFileDialog } from '../../services/neu
 interface FileExplorerProps {
   files: MarkdownFile[];
   activeFileId: string;
+  theme: DocumentTheme;
   onSelectFile: (id: string) => void;
   onNewFile: () => void;
   onImportFiles: (files: FileList | File[]) => void;
@@ -40,6 +41,7 @@ interface FileExplorerProps {
 export const FileExplorer: React.FC<FileExplorerProps> = ({
   files,
   activeFileId,
+  theme,
   onSelectFile,
   onNewFile,
   onImportFiles,
@@ -133,9 +135,14 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`w-64 shrink-0 border-r border-slate-800 bg-[#111318] flex flex-col h-full overflow-hidden select-none transition-all relative ${
-          isDragOver ? 'ring-2 ring-indigo-500 ring-inset bg-indigo-950/30' : ''
+        className={`w-64 shrink-0 border-r flex flex-col h-full overflow-hidden select-none transition-all relative ${
+          isDragOver ? 'ring-2 ring-indigo-500 ring-inset' : ''
         }`}
+        style={{
+          backgroundColor: theme.surface,
+          borderColor: theme.surfaceBorder,
+          color: theme.text,
+        }}
       >
         {/* Hidden file upload input */}
         <input
@@ -153,25 +160,35 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
         {/* Drag Overlay Notice */}
         {isDragOver && (
-          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#0F1115]/95 p-4 text-center pointer-events-none">
-            <Upload className="w-10 h-10 text-indigo-400 animate-bounce mb-2" />
-            <div className="text-sm font-bold text-white">Drop .MD Files Here</div>
-            <div className="text-xs text-indigo-300 mt-1">Instant high-speed parsing</div>
+          <div
+            className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 text-center pointer-events-none"
+            style={{ backgroundColor: `${theme.bg}f0` }}
+          >
+            <Upload className="w-10 h-10 animate-bounce mb-2" style={{ color: theme.accent }} />
+            <div className="text-sm font-bold" style={{ color: theme.heading }}>Drop .MD Files Here</div>
+            <div className="text-xs mt-1" style={{ color: theme.textMuted }}>Instant high-speed parsing</div>
           </div>
         )}
 
         {/* Workspace Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div
+          className="p-4 border-b flex items-center justify-between"
+          style={{ borderColor: theme.surfaceBorder }}
+        >
           <div className="flex items-center space-x-2">
-            <FolderOpen className="w-3.5 h-3.5 text-indigo-400" />
-            <h2 className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
+            <FolderOpen className="w-3.5 h-3.5" style={{ color: theme.accent }} />
+            <h2
+              className="text-[10px] uppercase tracking-widest font-bold"
+              style={{ color: theme.textMuted }}
+            >
               Workspace Files
             </h2>
           </div>
           <button
             id="new-doc-btn"
             onClick={onNewFile}
-            className="p-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-sm"
+            className="p-1 rounded-lg text-white transition-colors shadow-sm"
+            style={{ backgroundColor: theme.accent }}
             title="New Markdown Document"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -179,7 +196,13 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         </div>
 
         {/* File Actions Bar */}
-        <div className="p-3 border-b border-slate-800 grid grid-cols-2 gap-2 bg-[#0D0E12]/50">
+        <div
+          className="p-3 border-b grid grid-cols-2 gap-2"
+          style={{
+            borderColor: theme.surfaceBorder,
+            backgroundColor: `${theme.codeBg}80`,
+          }}
+        >
           <button
             id="open-file-btn"
             onClick={async () => {
@@ -195,17 +218,27 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                 fileInputRef.current?.click();
               }
             }}
-            className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#16181D] hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors"
+            className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-xs font-medium transition-colors"
+            style={{
+              backgroundColor: theme.surface,
+              borderColor: theme.surfaceBorder,
+              color: theme.text,
+            }}
             title="Open markdown file (Native dialog / browser)"
           >
-            <Upload className="w-3.5 h-3.5 text-indigo-400" />
+            <Upload className="w-3.5 h-3.5" style={{ color: theme.accent }} />
             <span>Open .md</span>
           </button>
 
           <button
             id="watch-disk-file-btn"
             onClick={onWatchDiskFile}
-            className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg bg-[#16181D] hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors"
+            className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-xs font-medium transition-colors"
+            style={{
+              backgroundColor: theme.surface,
+              borderColor: theme.surfaceBorder,
+              color: theme.text,
+            }}
             title="Watch live file on disk (File System Access API)"
           >
             <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
@@ -223,11 +256,17 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
               <div
                 key={file.id}
                 onClick={() => onSelectFile(file.id)}
-                className={`group relative flex items-center justify-between p-2.5 rounded-xl text-xs cursor-pointer transition-all ${
-                  isActive
-                    ? 'bg-indigo-600/15 border border-indigo-500/30 text-white font-medium shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent'
-                }`}
+                className="group relative flex items-center justify-between p-2.5 rounded-xl text-xs cursor-pointer transition-all border"
+                style={{
+                  backgroundColor: isActive
+                    ? `${theme.accent}18`
+                    : 'transparent',
+                  borderColor: isActive
+                    ? `${theme.accent}40`
+                    : 'transparent',
+                  color: isActive ? theme.heading : theme.textMuted,
+                  fontWeight: isActive ? 600 : 400,
+                }}
               >
                 <div className="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
                   <div className="shrink-0">
@@ -236,7 +275,10 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                         <Radio className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                       </span>
                     ) : (
-                      <FileCode className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
+                      <FileCode
+                        className="w-3.5 h-3.5"
+                        style={{ color: isActive ? theme.accent : theme.textMuted }}
+                      />
                     )}
                   </div>
 
@@ -251,7 +293,12 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                           if (e.key === 'Escape') setEditingId(null);
                         }}
                         autoFocus
-                        className="w-full px-1.5 py-0.5 text-xs bg-[#0D0E12] border border-indigo-500 rounded text-white focus:outline-none"
+                        className="w-full px-1.5 py-0.5 text-xs border rounded focus:outline-none"
+                        style={{
+                          backgroundColor: theme.codeBg,
+                          borderColor: theme.accent,
+                          color: theme.text,
+                        }}
                       />
                       <button
                         onClick={() => handleSaveRename(file.id)}
@@ -261,15 +308,24 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                       </button>
                       <button
                         onClick={() => setEditingId(null)}
-                        className="p-1 text-slate-400 hover:text-slate-300"
+                        className="p-1 hover:opacity-80"
+                        style={{ color: theme.textMuted }}
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ) : (
                     <div className="min-w-0 flex-1">
-                      <div className={`truncate ${isActive ? 'text-white' : 'text-slate-300'}`}>{file.name}</div>
-                      <div className="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5 font-mono">
+                      <div
+                        className="truncate"
+                        style={{ color: isActive ? theme.heading : theme.text }}
+                      >
+                        {file.name}
+                      </div>
+                      <div
+                        className="text-[10px] flex items-center gap-2 mt-0.5 font-mono"
+                        style={{ color: theme.textMuted, opacity: 0.8 }}
+                      >
                         <span>{(file.content.length / 1024).toFixed(1)} KB</span>
                         <span>&bull;</span>
                         <span>{new Date(file.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -287,7 +343,8 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                         e.stopPropagation();
                         onQuickLook(file);
                       }}
-                      className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-700/80 transition-colors"
+                      className="p-1 rounded hover:opacity-80 transition-colors"
+                      style={{ color: theme.textMuted }}
                       title="QuickLook (Space)"
                     >
                       <Eye className="w-3.5 h-3.5" />
@@ -295,7 +352,8 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
                     <button
                       onClick={(e) => handleStartRename(file, e)}
-                      className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-700/80 transition-colors"
+                      className="p-1 rounded hover:opacity-80 transition-colors"
+                      style={{ color: theme.textMuted }}
                       title="Rename"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -307,7 +365,8 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                           e.stopPropagation();
                           setDeleteTarget(file);
                         }}
-                        className="p-1 text-slate-400 hover:text-rose-400 rounded hover:bg-slate-700/80 transition-colors"
+                        className="p-1 rounded hover:text-rose-400 transition-colors"
+                        style={{ color: theme.textMuted }}
                         title="Delete Document"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -321,14 +380,28 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         </div>
 
         {/* QuickLook Finder Hint Footer */}
-        <div className="p-3 bg-[#0D0E12] border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+        <div
+          className="p-3 border-t text-[11px] flex items-center justify-between"
+          style={{
+            backgroundColor: `${theme.codeBg}80`,
+            borderColor: theme.surfaceBorder,
+            color: theme.textMuted,
+          }}
+        >
           <span className="flex items-center space-x-1.5">
-            <span className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded font-mono text-[10px] text-indigo-300 font-bold">
+            <span
+              className="px-1.5 py-0.5 border rounded font-mono text-[10px] font-bold"
+              style={{
+                backgroundColor: theme.surface,
+                borderColor: theme.surfaceBorder,
+                color: theme.accent,
+              }}
+            >
               Space
             </span>
-            <span className="text-[11px] text-slate-400">QuickLook</span>
+            <span style={{ color: theme.textMuted }}>QuickLook</span>
           </span>
-          <span className="text-[10px] text-slate-500 font-mono">{files.length} docs</span>
+          <span className="text-[10px] font-mono" style={{ color: theme.textMuted }}>{files.length} docs</span>
         </div>
       </aside>
 
@@ -340,18 +413,26 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
           title="Delete Document"
           maxWidth="sm"
         >
-          <div className="space-y-4 text-slate-300 text-sm">
+          <div className="space-y-4 text-sm" style={{ color: theme.text }}>
             <div className="flex items-center gap-3 p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-rose-200">
               <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
-              <div>Are you sure you want to delete <span className="font-semibold text-white font-mono">{deleteTarget.name}</span>?</div>
+              <div>Are you sure you want to delete <span className="font-semibold font-mono">{deleteTarget.name}</span>?</div>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs leading-relaxed" style={{ color: theme.textMuted }}>
               This action will remove the document from your local workspace.
             </p>
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div
+              className="flex items-center justify-end gap-2 pt-2 border-t"
+              style={{ borderColor: theme.surfaceBorder }}
+            >
               <button
                 onClick={() => setDeleteTarget(null)}
-                className="px-3.5 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                className="px-3.5 py-2 text-xs font-medium rounded-lg transition-colors border"
+                style={{
+                  backgroundColor: theme.codeBg,
+                  borderColor: theme.surfaceBorder,
+                  color: theme.text,
+                }}
               >
                 Cancel
               </button>

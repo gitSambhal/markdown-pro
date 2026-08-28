@@ -60,7 +60,8 @@ export const TableRenderer: React.FC<TableRendererProps> = ({
   return (
     <div
       ref={tableRef}
-      className="group relative my-6 rounded-xl border transition-all duration-200 overflow-hidden shadow-sm"
+      data-block-type="table"
+      className="table-renderer-wrapper group relative my-6 rounded-xl border transition-all duration-200 overflow-hidden shadow-sm"
       style={{
         borderColor: theme.tableBorder,
         backgroundColor: theme.surface,

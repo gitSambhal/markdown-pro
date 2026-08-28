@@ -13,6 +13,7 @@ import {
 } from './types';
 import { DOCUMENT_THEMES } from './utils/themes';
 import { extractTableOfContents, computeDocumentStats } from './utils/toc';
+import { generateExportedHtml } from './utils/htmlExport';
 import { StorageService } from './services/storage';
 import { setNativeWindowTitle } from './services/neutralino';
 import { useToast } from './hooks/useToast';
@@ -324,53 +325,7 @@ export default function App() {
   }, [activeFile, addToast]);
 
   const handleExportHtml = useCallback(() => {
-    const renderedContainer = document.getElementById('markdown-rendered-view');
-    const innerHtml = renderedContainer ? renderedContainer.innerHTML : `<pre>${activeFile.content}</pre>`;
-
-    const htmlBundle = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>${activeFile.name}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="author" content="Suhail Akhtar (suhail.top)">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background-color: ${currentTheme.bg};
-      color: ${currentTheme.text};
-      font-family: ${currentTheme.fontFamily};
-      font-size: ${fontSize}px;
-      line-height: 1.7;
-      margin: 0;
-      padding: 40px 20px;
-    }
-    .container {
-      max-width: 860px;
-      margin: 0 auto;
-    }
-    h1, h2, h3, h4, h5, h6 { color: ${currentTheme.heading}; border-color: ${currentTheme.surfaceBorder}; }
-    a { color: ${currentTheme.accent}; }
-    blockquote { background: ${currentTheme.blockquoteBg}; border-left: 4px solid ${currentTheme.blockquoteBorder}; padding: 12px 18px; }
-    code { background: ${currentTheme.inlineCodeBg}; color: ${currentTheme.inlineCodeText}; padding: 2px 6px; border-radius: 4px; }
-    pre { background: ${currentTheme.codeBg}; color: ${currentTheme.codeText}; padding: 16px; border-radius: 10px; overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th, td { border: 1px solid ${currentTheme.tableBorder}; padding: 10px 14px; text-align: left; }
-    th { background: ${currentTheme.tableHeaderBg}; }
-    footer { margin-top: 50px; padding-top: 20px; border-top: 1px solid ${currentTheme.surfaceBorder}; font-size: 12px; color: ${currentTheme.textMuted}; text-align: center; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    ${innerHtml}
-    <footer>
-      Exported with <strong>Markdown Viewer Pro</strong> &bull; Developed by <a href="https://suhail.top" target="_blank">Suhail Akhtar</a>
-    </footer>
-  </div>
-</body>
-</html>`;
-
+    const htmlBundle = generateExportedHtml(activeFile, currentTheme, fontSize);
     const blob = new Blob([htmlBundle], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -378,7 +333,7 @@ export default function App() {
     a.download = `${activeFile.name.replace(/\.[^/.]+$/, '')}.html`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast('success', 'Exported HTML Document', 'Self-contained file saved.');
+    addToast('success', 'Exported HTML Document', 'Self-contained file saved with full styles.');
   }, [activeFile, currentTheme, fontSize, addToast]);
 
   const handlePrintPdf = useCallback(() => {
@@ -431,7 +386,19 @@ export default function App() {
   return (
     <div
       id="app-root-shell"
-      className="flex flex-col h-screen w-screen overflow-hidden bg-[#0F1115] text-slate-100 font-sans"
+      className="flex flex-col h-screen w-screen overflow-hidden font-sans transition-colors duration-150"
+      style={{
+        backgroundColor: currentTheme.bg,
+        color: currentTheme.text,
+        ['--app-bg' as any]: currentTheme.bg,
+        ['--app-surface' as any]: currentTheme.surface,
+        ['--app-surface-border' as any]: currentTheme.surfaceBorder,
+        ['--app-text' as any]: currentTheme.text,
+        ['--app-text-muted' as any]: currentTheme.textMuted,
+        ['--app-heading' as any]: currentTheme.heading,
+        ['--app-accent' as any]: currentTheme.accent,
+        ['--app-code-bg' as any]: currentTheme.codeBg,
+      }}
     >
       {/* Top Navbar */}
       <TopNavbar
@@ -464,6 +431,7 @@ export default function App() {
         <FileExplorer
           files={files}
           activeFileId={activeFile.id}
+          theme={currentTheme}
           onSelectFile={handleSelectFile}
           onNewFile={handleNewFile}
           onImportFiles={handleImportFiles}
@@ -520,6 +488,11 @@ export default function App() {
           theme={currentTheme}
           isOpen={isTocOpen}
           onClose={() => setIsTocOpen(false)}
+          onEnsureViewerVisible={() => {
+            if (viewMode === 'edit') {
+              setViewMode('split');
+            }
+          }}
         />
       </div>
 
@@ -527,6 +500,7 @@ export default function App() {
       <Footer
         stats={stats}
         activeFile={activeFile}
+        theme={currentTheme}
         onOpenChangelog={() => setIsChangelogOpen(true)}
       />
 

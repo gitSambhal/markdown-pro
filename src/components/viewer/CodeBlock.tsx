@@ -27,6 +27,7 @@ import 'prismjs/components/prism-markdown';
 
 import { Copy, Check, Maximize2, Hash } from 'lucide-react';
 import { DocumentTheme, ZoomTargetData } from '../../types';
+import { copyTextNative } from '../../services/neutralino';
 
 interface CodeBlockProps {
   language?: string;
@@ -60,8 +61,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     }
   }, [code, cleanLang]);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(code);
+  const handleCopy = async () => {
+    await copyTextNative(code);
     setCopied(true);
     onToast('success', 'Code copied', 'Snippet copied to clipboard.');
     setTimeout(() => setCopied(false), 2000);
@@ -81,7 +82,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
   return (
     <div
       id={`code-block-${cleanLang}`}
-      className="group relative my-6 rounded-xl border transition-all duration-200 overflow-hidden shadow-sm"
+      data-block-type="code"
+      data-language={cleanLang}
+      className="code-block-wrapper group relative my-6 rounded-xl border transition-all duration-200 overflow-hidden shadow-sm"
       style={{
         backgroundColor: theme.codeBg,
         borderColor: theme.codeBorder,
@@ -147,25 +150,25 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
       </div>
 
       {/* Code Content with Line Numbers */}
-      <div className="overflow-x-auto p-4 font-mono text-[13px] leading-relaxed">
-        <div className="flex min-w-full">
+      <div className="code-block-body overflow-x-auto p-4 font-mono text-[13px] leading-relaxed">
+        <div className="code-block-row flex min-w-full items-start">
           {showLineNumbers && (
             <div
-              className="select-none pr-4 text-right border-r font-mono text-[12px] opacity-40 shrink-0"
+              className="code-line-numbers select-none pr-4 text-right border-r font-mono text-[13px] opacity-40 shrink-0"
               style={{
                 borderColor: theme.codeBorder,
                 color: theme.textMuted,
               }}
             >
               {lines.map((_, i) => (
-                <div key={i} className="leading-relaxed">
+                <div key={i} className="line-number leading-relaxed">
                   {i + 1}
                 </div>
               ))}
             </div>
           )}
           <pre
-            className={`flex-1 m-0 p-0 overflow-x-auto ${showLineNumbers ? 'pl-4' : ''}`}
+            className={`code-block-pre flex-1 m-0 p-0 overflow-x-auto ${showLineNumbers ? 'pl-4' : ''}`}
             style={{
               color: theme.codeText,
             }}
