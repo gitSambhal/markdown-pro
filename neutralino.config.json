@@ -1,0 +1,48 @@
+{
+  "$schema": "https://raw.githubusercontent.com/neutralinojs/neutralinojs/main/schemas/neutralino.config.schema.json",
+  "applicationId": "top.suhail.markdownviewerpro",
+  "version": "1.0.0",
+  "defaultMode": "window",
+  "port": 0,
+  "documentRoot": "/dist/",
+  "url": "/",
+  "enableServer": true,
+  "enableNativeAPI": true,
+  "tokenSecurity": "one-time",
+  "logging": {
+    "enabled": true,
+    "writeToLogFile": false
+  },
+  "nativeBlockList": [],
+  "modes": {
+    "window": {
+      "title": "Markdown Viewer Pro",
+      "width": 1280,
+      "height": 840,
+      "minWidth": 800,
+      "minHeight": 560,
+      "center": true,
+      "fullScreen": false,
+      "alwaysOnTop": false,
+      "icon": "/icons/appIcon.png",
+      "enableInspector": false,
+      "borderless": false,
+      "maximize": false,
+      "hidden": false,
+      "resizable": true,
+      "useSavedState": true,
+      "exitProcessOnClose": true
+    },
+    "browser": {
+      "tags": ["desktop", "mobile"]
+    }
+  },
+  "cli": {
+    "binaryName": "markdown-viewer-pro",
+    "resourcesPath": "/dist/",
+    "extensionsPath": "/extensions/",
+    "clientLibrary": "/dist/neutralino.js",
+    "binaryVersion": "5.4.0",
+    "clientVersion": "5.4.0"
+  }
+}

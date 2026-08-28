@@ -1,0 +1,164 @@
+/**
+ * Markdown Viewer Pro - Global Stylesheet & Print Engine
+ * Developer: Suhail Akhtar (https://suhail.top)
+ * @license Apache-2.0
+ */
+
+@import "tailwindcss";
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6);
+}
+
+/* PrismJS Syntax Highlighting Theme Styles */
+code[class*="language-"],
+pre[class*="language-"] {
+  text-shadow: none;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  line-height: 1.6;
+  tab-size: 2;
+  hyphens: none;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #718096;
+  font-style: italic;
+}
+
+.token.punctuation {
+  color: #a0aec0;
+}
+
+.token.namespace {
+  opacity: 0.7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: #f56565;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #48bb78;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #ecc94b;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #63b3ed;
+  font-weight: 600;
+}
+
+.token.function,
+.token.class-name {
+  color: #ed64a6;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: #f6ad55;
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+/* Markdown table styles */
+.markdown-table-wrapper table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.markdown-table-wrapper th,
+.markdown-table-wrapper td {
+  padding: 8px 12px;
+}
+
+/* Mermaid SVG sizing */
+.mermaid-rendered-svg svg {
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* Print Stylesheet for Print / PDF Export */
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  #top-navbar,
+  #file-explorer-sidebar,
+  #toc-sidebar,
+  #app-footer,
+  #toast-container,
+  #quicklook-portal,
+  #zoom-modal-overlay {
+    display: none !important;
+  }
+
+  #document-scroll-viewport {
+    overflow: visible !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #markdown-rendered-view {
+    color: #111827 !important;
+    max-width: 100% !important;
+    font-size: 14pt !important;
+  }
+
+  pre, code, table, blockquote, .mermaid-rendered-svg {
+    page-break-inside: avoid;
+  }
+}

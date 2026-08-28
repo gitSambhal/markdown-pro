@@ -1,0 +1,16 @@
+{
+  "name": "Markdown Viewer Pro",
+  "short_name": "MDViewer",
+  "description": "High-performance Markdown file viewer with native Mermaid diagrams, QuickLook space preview, syntax highlighting, 12 themes, TOC sidebar, zoom & live reload.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236366f1'/><path d='M30 30h40v40H30z' fill='none' stroke='white' stroke-width='6'/><path d='M40 45l10 10 10-10M50 35v20' stroke='white' stroke-width='6' stroke-linecap='round'/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

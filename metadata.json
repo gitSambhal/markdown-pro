@@ -1,0 +1,6 @@
+{
+  "name": "Markdown Viewer Pro",
+  "description": "High-performance Markdown file viewer with native Mermaid diagrams, QuickLook space preview, syntax highlighting, 12 themes, TOC sidebar, zoom & live reload.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
