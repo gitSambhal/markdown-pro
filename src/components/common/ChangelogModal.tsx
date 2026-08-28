@@ -15,7 +15,7 @@ interface ChangelogModalProps {
 
 export const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="What's New in v1.1.1" maxWidth="2xl">
+    <Modal isOpen={isOpen} onClose={onClose} onConfirm={onClose} title="What's New in v1.2.0" maxWidth="2xl">
       <div className="space-y-6 text-slate-300 text-sm leading-relaxed">
         {/* Release Header */}
         <div className="flex items-center justify-between p-4 bg-indigo-950/40 border border-indigo-500/30 rounded-xl">
@@ -24,12 +24,12 @@ export const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose 
               <Rocket className="w-5 h-5" />
             </div>
             <div>
-              <div className="font-semibold text-white">Markdown Viewer Pro v1.1.1</div>
-              <div className="text-xs text-indigo-300">HTML Export Polish & TOC Smooth Scrolling</div>
+              <div className="font-semibold text-white">Markdown Viewer Pro v1.2.0</div>
+              <div className="text-xs text-indigo-300">Multi-Tabs Workspace & Comprehensive Keyboard Shortcuts</div>
             </div>
           </div>
           <span className="px-2.5 py-1 bg-indigo-500/20 text-indigo-300 text-xs font-mono rounded-full border border-indigo-500/30">
-            v1.1.1
+            v1.2.0
           </span>
         </div>
 

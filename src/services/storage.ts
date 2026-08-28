@@ -14,6 +14,7 @@ const STORAGE_KEY_VIEW_MODE = 'md_viewer_view_mode_v1';
 const STORAGE_KEY_FONT_SIZE = 'md_viewer_font_size_v1';
 const STORAGE_KEY_CONTAINER_WIDTH = 'md_viewer_container_width_v1';
 const STORAGE_KEY_SIDEBAR_OPEN = 'md_viewer_sidebar_open_v1';
+const STORAGE_KEY_OPEN_TABS = 'md_viewer_open_tabs_v1';
 
 export const StorageService = {
   loadFiles(): MarkdownFile[] {
@@ -97,5 +98,28 @@ export const StorageService = {
 
   setSidebarOpen(open: boolean) {
     localStorage.setItem(STORAGE_KEY_SIDEBAR_OPEN, open.toString());
+  },
+
+  getOpenTabIds(): string[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY_OPEN_TABS);
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse open tabs from localStorage', e);
+    }
+    return [SAMPLE_DOCUMENTS[0].id];
+  },
+
+  setOpenTabIds(ids: string[]) {
+    try {
+      localStorage.setItem(STORAGE_KEY_OPEN_TABS, JSON.stringify(ids));
+    } catch (e) {
+      console.error('Error saving open tabs to localStorage', e);
+    }
   }
 };

@@ -19,6 +19,7 @@ import { setNativeWindowTitle } from './services/neutralino';
 import { useToast } from './hooks/useToast';
 
 import { TopNavbar } from './components/toolbar/TopNavbar';
+import { TabBar } from './components/toolbar/TabBar';
 import { FileExplorer } from './components/sidebar/FileExplorer';
 import { TableOfContents } from './components/sidebar/TableOfContents';
 import { MarkdownRenderer } from './components/viewer/MarkdownRenderer';
@@ -26,6 +27,7 @@ import { LiveEditor } from './components/editor/LiveEditor';
 import { ZoomModal } from './components/common/ZoomModal';
 import { QuickLookModal } from './components/quicklook/QuickLookModal';
 import { ChangelogModal } from './components/common/ChangelogModal';
+import { ShortcutsModal } from './components/common/ShortcutsModal';
 import { ToastContainer } from './components/common/Toast';
 import { Footer } from './components/footer/Footer';
 
@@ -33,6 +35,14 @@ export default function App() {
   // State Initialization from Persistent Local Storage
   const [files, setFiles] = useState<MarkdownFile[]>(() => StorageService.loadFiles());
   const [activeFileId, setActiveFileId] = useState<string>(() => StorageService.getActiveFileId());
+  const [openTabIds, setOpenTabIds] = useState<string[]>(() => {
+    const savedTabs = StorageService.getOpenTabIds();
+    const active = StorageService.getActiveFileId();
+    if (!savedTabs.includes(active)) {
+      return [...savedTabs, active];
+    }
+    return savedTabs;
+  });
   const [themeId, setThemeId] = useState<ThemeId>(() => StorageService.getTheme());
   const [viewMode, setViewMode] = useState<ViewMode>(() => StorageService.getViewMode());
   const [fontSize, setFontSize] = useState<number>(() => StorageService.getFontSize());
@@ -46,6 +56,7 @@ export default function App() {
   const [zoomData, setZoomData] = useState<ZoomTargetData | null>(null);
   const [quickLookFile, setQuickLookFile] = useState<MarkdownFile | null>(null);
   const [isChangelogOpen, setIsChangelogOpen] = useState<boolean>(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
 
   const { toasts, addToast, removeToast } = useToast();
 
@@ -78,6 +89,10 @@ export default function App() {
   useEffect(() => {
     StorageService.setActiveFileId(activeFileId);
   }, [activeFileId]);
+
+  useEffect(() => {
+    StorageService.setOpenTabIds(openTabIds);
+  }, [openTabIds]);
 
   useEffect(() => {
     StorageService.setTheme(themeId);
@@ -162,10 +177,60 @@ export default function App() {
     return () => clearInterval(interval);
   }, [activeFile, addToast]);
 
-  // File Operations
+  // File & Tab Operations
   const handleSelectFile = useCallback((id: string) => {
     setActiveFileId(id);
+    setOpenTabIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
   }, []);
+
+  const handleSelectTab = useCallback((id: string) => {
+    setActiveFileId(id);
+    setOpenTabIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  }, []);
+
+  const handleCloseTab = useCallback(
+    (id: string, e?: React.MouseEvent) => {
+      if (e) {
+        e.stopPropagation();
+      }
+      setOpenTabIds((prev) => {
+        const filtered = prev.filter((tabId) => tabId !== id);
+        if (filtered.length === 0) {
+          // Keep at least one tab open
+          const fallback = files.find((f) => f.id !== id) || files[0];
+          if (fallback) {
+            setActiveFileId(fallback.id);
+            return [fallback.id];
+          }
+          return prev;
+        }
+        if (activeFileId === id) {
+          const closedIndex = prev.indexOf(id);
+          const nextIndex = Math.min(closedIndex, filtered.length - 1);
+          setActiveFileId(filtered[nextIndex]);
+        }
+        return filtered;
+      });
+    },
+    [activeFileId, files]
+  );
+
+  const handleCloseOtherTabs = useCallback(
+    (id: string) => {
+      setOpenTabIds([id]);
+      setActiveFileId(id);
+      addToast('info', 'Closed Other Tabs', 'Workspace tabs cleaned up.');
+    },
+    [addToast]
+  );
+
+  const handleCloseAllTabs = useCallback(() => {
+    if (files.length > 0) {
+      setOpenTabIds([files[0].id]);
+      setActiveFileId(files[0].id);
+    }
+    addToast('info', 'Tabs Reset', 'Showing single active document.');
+  }, [files, addToast]);
 
   const handleNewFile = useCallback(() => {
     const untitledCount = files.filter((f) => f.name.startsWith('Untitled')).length + 1;
@@ -178,6 +243,7 @@ export default function App() {
     };
 
     setFiles((prev) => [newDoc, ...prev]);
+    setOpenTabIds((prev) => [newDoc.id, ...prev]);
     setActiveFileId(newDoc.id);
     setViewMode('split');
     addToast('success', 'Created new document', newDoc.name);
@@ -206,6 +272,8 @@ export default function App() {
 
       if (importedDocs.length > 0) {
         setFiles((prev) => [...importedDocs, ...prev]);
+        const importedIds = importedDocs.map((d) => d.id);
+        setOpenTabIds((prev) => [...importedIds, ...prev]);
         setActiveFileId(importedDocs[0].id);
         addToast(
           'success',
@@ -255,6 +323,7 @@ export default function App() {
       };
 
       setFiles((prev) => [watchedDoc, ...prev]);
+      setOpenTabIds((prev) => [watchedDoc.id, ...prev]);
       setActiveFileId(watchedDoc.id);
       addToast(
         'success',
@@ -287,6 +356,7 @@ export default function App() {
         }
         return filtered;
       });
+      setOpenTabIds((prev) => prev.filter((tabId) => tabId !== id));
       addToast('info', 'Document removed', 'Removed from workspace.');
     },
     [activeFileId, addToast]
@@ -343,29 +413,115 @@ export default function App() {
     }, 300);
   }, [addToast]);
 
-  // Global Keyboard Shortcuts
+  // Global Keyboard Shortcuts (Tabs, Popups, Modals, Workspace)
   useEffect(() => {
     const handleGlobalShortcuts = (e: KeyboardEvent) => {
-      // Toggle sidebars
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+      const target = e.target as HTMLElement;
+      const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
+      // Escape: Dismiss active popups / modals
+      if (e.key === 'Escape') {
+        if (isShortcutsOpen) {
+          e.preventDefault();
+          setIsShortcutsOpen(false);
+          return;
+        }
+        if (isChangelogOpen) {
+          e.preventDefault();
+          setIsChangelogOpen(false);
+          return;
+        }
+        if (quickLookFile) {
+          e.preventDefault();
+          setQuickLookFile(null);
+          return;
+        }
+        if (zoomData) {
+          e.preventDefault();
+          setZoomData(null);
+          return;
+        }
+      }
+
+      // '?' or 'Cmd/Ctrl + /' for Shortcuts Cheat Sheet
+      if ((e.key === '?' && !isInput) || ((e.metaKey || e.ctrlKey) && e.key === '/')) {
+        e.preventDefault();
+        setIsShortcutsOpen((prev) => !prev);
+        return;
+      }
+
+      // Close Active Tab: Cmd/Ctrl + W
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'w') {
+        e.preventDefault();
+        handleCloseTab(activeFileId);
+        return;
+      }
+
+      // New Document Tab: Cmd/Ctrl + Alt + N
+      if ((e.metaKey || e.ctrlKey) && e.altKey && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        handleNewFile();
+        return;
+      }
+
+      // Cycle Open Tabs: Ctrl + Tab (or Ctrl + Shift + Tab)
+      if (e.ctrlKey && e.key === 'Tab') {
+        e.preventDefault();
+        const currentIndex = openTabIds.indexOf(activeFileId);
+        if (currentIndex !== -1 && openTabIds.length > 1) {
+          const nextIndex = e.shiftKey
+            ? (currentIndex - 1 + openTabIds.length) % openTabIds.length
+            : (currentIndex + 1) % openTabIds.length;
+          setActiveFileId(openTabIds[nextIndex]);
+        }
+        return;
+      }
+
+      // Jump to Tab #1..#9: Cmd/Ctrl + 1..9 (when not editing text)
+      if ((e.metaKey || e.ctrlKey) && !isInput && /^[1-9]$/.test(e.key)) {
+        const tabIndex = parseInt(e.key, 10) - 1;
+        if (openTabIds[tabIndex]) {
+          e.preventDefault();
+          setActiveFileId(openTabIds[tabIndex]);
+          return;
+        }
+      }
+
+      // Toggle sidebars: Cmd/Ctrl + B (when not typing in editor)
+      if ((e.metaKey || e.ctrlKey) && !isInput && e.key.toLowerCase() === 'b') {
         e.preventDefault();
         setIsFilesOpen((prev) => !prev);
+        return;
       }
-      // Toggle view mode
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'e') {
+
+      // Toggle view mode: Cmd/Ctrl + E
+      if ((e.metaKey || e.ctrlKey) && !isInput && e.key.toLowerCase() === 'e') {
         e.preventDefault();
         setViewMode((prev) => (prev === 'view' ? 'split' : prev === 'split' ? 'edit' : 'view'));
+        return;
       }
-      // Save / Export
+
+      // Save / Export: Cmd/Ctrl + S
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
         handleExportMarkdown();
+        return;
       }
     };
 
     window.addEventListener('keydown', handleGlobalShortcuts);
     return () => window.removeEventListener('keydown', handleGlobalShortcuts);
-  }, [handleExportMarkdown]);
+  }, [
+    activeFileId,
+    openTabIds,
+    handleCloseTab,
+    handleNewFile,
+    handleExportMarkdown,
+    isShortcutsOpen,
+    isChangelogOpen,
+    quickLookFile,
+    zoomData,
+  ]);
 
   // Container width max-width CSS classes
   const getContainerWidthClass = () => {
@@ -443,42 +599,60 @@ export default function App() {
           onToast={addToast}
         />
 
-        {/* Center: Live Editor & Document Viewer */}
-        <main className="flex-1 flex overflow-hidden relative">
-          {/* Split Mode: Live Editor on the Left */}
-          {(viewMode === 'split' || viewMode === 'edit') && (
-            <div className={`${viewMode === 'split' ? 'w-1/2' : 'w-full'} h-full flex flex-col`}>
-              <LiveEditor
-                content={activeFile.content}
-                onChange={handleUpdateContent}
-                theme={currentTheme}
-                fontSize={fontSize}
-              />
-            </div>
-          )}
+        {/* Center: Multi-Tab Bar, Live Editor & Document Viewer */}
+        <main className="flex-1 flex flex-col overflow-hidden relative">
+          {/* Multi-Tab Workspace Header Bar */}
+          <TabBar
+            files={files}
+            openTabIds={openTabIds}
+            activeFileId={activeFile.id}
+            theme={currentTheme}
+            onSelectTab={handleSelectTab}
+            onCloseTab={handleCloseTab}
+            onCloseOtherTabs={handleCloseOtherTabs}
+            onCloseAllTabs={handleCloseAllTabs}
+            onNewTab={handleNewFile}
+            onOpenShortcuts={() => setIsShortcutsOpen(true)}
+            onQuickLook={handleQuickLook}
+          />
 
-          {/* Reader Viewport on the Right / Center */}
-          {(viewMode === 'view' || viewMode === 'split') && (
-            <div
-              id="document-scroll-viewport"
-              className={`${
-                viewMode === 'split' ? 'w-1/2' : 'w-full'
-              } h-full overflow-y-auto transition-colors duration-150 p-6 sm:p-10 md:p-14`}
-              style={{
-                backgroundColor: currentTheme.bg,
-              }}
-            >
-              <div className={`mx-auto ${getContainerWidthClass()}`}>
-                <MarkdownRenderer
+          {/* Editor & Viewport Workspace Area */}
+          <div className="flex-1 flex overflow-hidden relative">
+            {/* Split Mode: Live Editor on the Left */}
+            {(viewMode === 'split' || viewMode === 'edit') && (
+              <div className={`${viewMode === 'split' ? 'w-1/2' : 'w-full'} h-full flex flex-col`}>
+                <LiveEditor
                   content={activeFile.content}
+                  onChange={handleUpdateContent}
                   theme={currentTheme}
                   fontSize={fontSize}
-                  onOpenZoom={setZoomData}
-                  onToast={addToast}
                 />
               </div>
-            </div>
-          )}
+            )}
+
+            {/* Reader Viewport on the Right / Center */}
+            {(viewMode === 'view' || viewMode === 'split') && (
+              <div
+                id="document-scroll-viewport"
+                className={`${
+                  viewMode === 'split' ? 'w-1/2' : 'w-full'
+                } h-full overflow-y-auto transition-colors duration-150 p-6 sm:p-10 md:p-14`}
+                style={{
+                  backgroundColor: currentTheme.bg,
+                }}
+              >
+                <div className={`mx-auto ${getContainerWidthClass()}`}>
+                  <MarkdownRenderer
+                    content={activeFile.content}
+                    theme={currentTheme}
+                    fontSize={fontSize}
+                    onOpenZoom={setZoomData}
+                    onToast={addToast}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </main>
 
         {/* Right: Table of Contents Sidebar */}
@@ -502,6 +676,13 @@ export default function App() {
         activeFile={activeFile}
         theme={currentTheme}
         onOpenChangelog={() => setIsChangelogOpen(true)}
+      />
+
+      {/* Keyboard Shortcuts Cheat Sheet Modal */}
+      <ShortcutsModal
+        isOpen={isShortcutsOpen}
+        theme={currentTheme}
+        onClose={() => setIsShortcutsOpen(false)}
       />
 
       {/* Interactive Zoom & Pan Inspector Modal */}

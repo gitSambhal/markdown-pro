@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-08-28
+
+### Added
+- **Multi-Document Tabs Workspace Bar**:
+  - Tab bar above editor/reader with smooth switching, close buttons (`X`), middle-click to close, and "+" button to open a new tab.
+  - Multi-tab keyboard navigation (`Ctrl+Tab`, `Ctrl+Shift+Tab`, `Cmd/Ctrl+W` to close tab, `Cmd/Ctrl+1..9` to switch directly to tabs).
+  - Open tabs state persistence across page refreshes via `StorageService`.
+  - Context menu and quick actions for closing other tabs or closing all tabs.
+- **Universal Keyboard Shortcuts for Modals and Popups**:
+  - `Escape`: Instantly dismiss any open modal, dialog, quicklook preview, or zoom inspector.
+  - `Enter`: Instant confirmation in destructive delete modals, inline rename inputs, and quick-launch into viewer from QuickLook.
+  - `Space / Esc` toggle in QuickLook with left/right arrow file cycling.
+  - `+ / - / 0` shortcuts in Interactive Zoom & Pan Inspector.
+- **Keyboard Shortcuts Cheat Sheet Modal (`?` or `Cmd/Ctrl + /`)**:
+  - Interactive overlay displaying all navigation, tab management, editor, and modal shortcut keys with direct Esc/Enter dismissal.
+
+---
+
 ## [1.1.4] - 2026-08-28
 
 ### Fixed

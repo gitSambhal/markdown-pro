@@ -4,7 +4,7 @@
  * @license Apache-2.0
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ZoomIn,
@@ -36,6 +36,36 @@ export const ZoomModal: React.FC<ZoomModalProps> = ({ data, onClose, onToast }) 
   const [copied, setCopied] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!data) return;
+
+    // Reset position and scale when data changes
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.key === 'Enter') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        setScale((prev) => Math.min(prev + 0.25, 4.0));
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        setScale((prev) => Math.max(prev - 0.25, 0.4));
+      } else if (e.key === '0') {
+        e.preventDefault();
+        setScale(1);
+        setPosition({ x: 0, y: 0 });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [data, onClose]);
 
   if (!data) return null;
 
@@ -257,9 +287,15 @@ export const ZoomModal: React.FC<ZoomModalProps> = ({ data, onClose, onToast }) 
             </div>
 
             {/* Floating helper badge */}
-            <div className="absolute bottom-4 left-4 bg-slate-900/90 border border-slate-800 text-slate-400 text-xs px-3 py-1.5 rounded-full flex items-center gap-2 pointer-events-none shadow-lg">
+            <div className="absolute bottom-4 left-4 bg-slate-900/90 border border-slate-800 text-slate-400 text-xs px-3.5 py-1.5 rounded-full flex items-center gap-2.5 pointer-events-none shadow-lg font-mono text-[11px]">
               <Move className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Drag to pan &bull; Scroll / +/- to zoom &bull; Double click to recenter</span>
+              <span>Drag to Pan</span>
+              <span className="opacity-40">&bull;</span>
+              <span><kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">+</kbd> / <kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">-</kbd> Zoom</span>
+              <span className="opacity-40">&bull;</span>
+              <span><kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">0</kbd> Reset</span>
+              <span className="opacity-40">&bull;</span>
+              <span><kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">Esc</kbd> / <kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">Enter</kbd> Close</span>
             </div>
           </div>
         </motion.div>

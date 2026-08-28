@@ -11,6 +11,7 @@ import { X } from 'lucide-react';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onConfirm?: () => void;
   title?: string;
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '6xl' | 'full';
@@ -20,20 +21,30 @@ interface ModalProps {
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
+  onConfirm,
   title,
   children,
   maxWidth = '2xl',
   showCloseButton = true,
 }) => {
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
         onClose();
+      } else if (e.key === 'Enter' && onConfirm) {
+        // If target is a button or input that has its own enter, allow it; otherwise trigger onConfirm
+        const target = e.target as HTMLElement;
+        if (target && target.tagName === 'TEXTAREA') return;
+        e.preventDefault();
+        onConfirm();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, onConfirm]);
 
   const getMaxWidthClass = () => {
     switch (maxWidth) {

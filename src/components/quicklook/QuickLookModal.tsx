@@ -52,6 +52,13 @@ export const QuickLookModal: React.FC<QuickLookModalProps> = ({
         return;
       }
 
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onSelectFile(file.id);
+        onClose();
+        return;
+      }
+
       const currentIndex = files.findIndex((f) => f.id === file.id);
       if (currentIndex === -1) return;
 
@@ -197,8 +204,12 @@ export const QuickLookModal: React.FC<QuickLookModalProps> = ({
               </span>
             </div>
 
-            <span className="text-[11px] text-slate-500 hidden md:inline">
-              Press <kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded">Space</kbd> or <kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded">&larr;</kbd> <kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded">&rarr;</kbd> to navigate
+            <span className="text-[11px] text-slate-500 hidden md:flex items-center gap-1.5 font-mono">
+              <kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">Enter</kbd> Open in Viewer
+              <span className="opacity-40">&bull;</span>
+              <kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">&larr;</kbd> <kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">&rarr;</kbd> Navigate
+              <span className="opacity-40">&bull;</span>
+              <kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">Space</kbd> / <kbd className="px-1 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px]">Esc</kbd> Close
             </span>
           </div>
 

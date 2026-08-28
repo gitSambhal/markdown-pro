@@ -410,6 +410,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         <Modal
           isOpen={true}
           onClose={() => setDeleteTarget(null)}
+          onConfirm={handleConfirmDelete}
           title="Delete Document"
           maxWidth="sm"
         >
@@ -422,26 +423,33 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
               This action will remove the document from your local workspace.
             </p>
             <div
-              className="flex items-center justify-end gap-2 pt-2 border-t"
+              className="flex items-center justify-between pt-2 border-t text-xs"
               style={{ borderColor: theme.surfaceBorder }}
             >
-              <button
-                onClick={() => setDeleteTarget(null)}
-                className="px-3.5 py-2 text-xs font-medium rounded-lg transition-colors border"
-                style={{
-                  backgroundColor: theme.codeBg,
-                  borderColor: theme.surfaceBorder,
-                  color: theme.text,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="px-3.5 py-2 text-xs font-medium text-white bg-rose-600 hover:bg-rose-500 rounded-lg transition-colors shadow-sm"
-              >
-                Delete Permanently
-              </button>
+              <span className="text-[10px] flex items-center gap-1.5" style={{ color: theme.textMuted }}>
+                <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono" style={{ borderColor: theme.surfaceBorder }}>Esc</kbd> Cancel
+                <span className="opacity-40">&bull;</span>
+                <kbd className="px-1 py-0.5 rounded border text-[9px] font-mono" style={{ borderColor: theme.surfaceBorder }}>Enter</kbd> Confirm
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  className="px-3.5 py-2 text-xs font-medium rounded-lg transition-colors border"
+                  style={{
+                    backgroundColor: theme.codeBg,
+                    borderColor: theme.surfaceBorder,
+                    color: theme.text,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="px-3.5 py-2 text-xs font-medium text-white bg-rose-600 hover:bg-rose-500 rounded-lg transition-colors shadow-sm"
+                >
+                  Delete Permanently
+                </button>
+              </div>
             </div>
           </div>
         </Modal>
