@@ -13,6 +13,7 @@ import {
   DocumentStats
 } from '../../types';
 import { THEME_LIST, DOCUMENT_THEMES } from '../../utils/themes';
+import { isNativeNeutralino } from '../../services/neutralino';
 import {
   Palette,
   Columns,
@@ -242,7 +243,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
             </div>
           )}
 
-          {onOpenDefaultAppModal && (
+          {onOpenDefaultAppModal && isNativeNeutralino() && (
             <button
               id="top-default-app-btn"
               onClick={onOpenDefaultAppModal}

@@ -62,6 +62,8 @@ export default function App() {
   const [isDefaultAppModalOpen, setIsDefaultAppModalOpen] = useState<boolean>(false);
 
   const { toasts, addToast, removeToast } = useToast();
+  const isDesktop = isNativeNeutralino();
+  const handleOpenDefaultAppModal = isDesktop ? () => setIsDefaultAppModalOpen(true) : undefined;
 
   // Auto-open file if passed via OS command-line arguments on app launch
   useEffect(() => {
@@ -638,7 +640,7 @@ export default function App() {
         stats={stats}
         isLiveSyncActive={!!activeFile?.isExternalFile}
         onToast={addToast}
-        onOpenDefaultAppModal={() => setIsDefaultAppModalOpen(true)}
+        onOpenDefaultAppModal={handleOpenDefaultAppModal}
       />
 
       {/* Main Multi-Pane Workspace */}
@@ -658,7 +660,7 @@ export default function App() {
             onQuickLook={handleQuickLook}
             isOpen={isFilesOpen}
             onToast={addToast}
-            onOpenDefaultAppModal={() => setIsDefaultAppModalOpen(true)}
+            onOpenDefaultAppModal={handleOpenDefaultAppModal}
           />
         )}
 
@@ -691,7 +693,7 @@ export default function App() {
               onLoadSample={handleLoadSample}
               onOpenShortcuts={() => setIsShortcutsOpen(true)}
               onToast={addToast}
-              onOpenDefaultAppModal={() => setIsDefaultAppModalOpen(true)}
+              onOpenDefaultAppModal={handleOpenDefaultAppModal}
             />
           ) : (
             /* Editor & Viewport Workspace Area */
@@ -757,7 +759,7 @@ export default function App() {
         activeFile={activeFile}
         theme={currentTheme}
         onOpenChangelog={() => setIsChangelogOpen(true)}
-        onOpenDefaultAppModal={() => setIsDefaultAppModalOpen(true)}
+        onOpenDefaultAppModal={handleOpenDefaultAppModal}
       />
 
       {/* Default App Association Modal */}

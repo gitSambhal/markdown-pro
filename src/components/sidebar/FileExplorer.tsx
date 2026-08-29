@@ -255,7 +255,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             </button>
           </div>
 
-          {onOpenDefaultAppModal && (
+          {onOpenDefaultAppModal && isNativeNeutralino() && (
             <button
               id="sidebar-default-app-btn"
               onClick={onOpenDefaultAppModal}

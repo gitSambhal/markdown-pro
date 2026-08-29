@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { DocumentStats, MarkdownFile, DocumentTheme } from '../../types';
+import { isNativeNeutralino } from '../../services/neutralino';
 import { Sparkles, Radio, CheckCircle, Clock, FileText } from 'lucide-react';
 
 interface FooterProps {
@@ -93,7 +94,7 @@ export const Footer: React.FC<FooterProps> = ({
           </a>
         </div>
 
-        {onOpenDefaultAppModal && (
+        {onOpenDefaultAppModal && isNativeNeutralino() && (
           <button
             id="set-default-app-footer-btn"
             onClick={onOpenDefaultAppModal}

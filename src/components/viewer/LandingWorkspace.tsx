@@ -230,7 +230,7 @@ export const LandingWorkspace: React.FC<LandingWorkspaceProps> = ({
                 <span>Create Blank Document</span>
               </button>
 
-              {onOpenDefaultAppModal && (
+              {onOpenDefaultAppModal && isNativeNeutralino() && (
                 <button
                   type="button"
                   onClick={(e) => {

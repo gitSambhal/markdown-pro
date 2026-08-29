@@ -1,16 +1,18 @@
 {
   "$schema": "https://raw.githubusercontent.com/neutralinojs/neutralinojs/main/schemas/neutralino.config.schema.json",
   "applicationId": "top.suhail.markdownviewerpro",
+  "applicationName": "Markdown Viewer Pro",
   "version": "1.0.0",
   "defaultMode": "window",
   "port": 0,
-  "documentRoot": "/dist/",
+  "documentRoot": "/",
   "url": "/",
+  "applicationIcon": "public/icons/appIcon.png",
   "enableServer": true,
   "enableNativeAPI": true,
   "tokenSecurity": "one-time",
   "logging": {
-    "enabled": true,
+    "enabled": false,
     "writeToLogFile": false
   },
   "nativeBlockList": [],
