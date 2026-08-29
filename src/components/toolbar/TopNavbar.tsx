@@ -34,7 +34,8 @@ import {
   Minimize,
   SlidersHorizontal,
   Sparkles,
-  FileDown
+  FileDown,
+  ShieldCheck
 } from 'lucide-react';
 
 interface TopNavbarProps {
@@ -59,6 +60,7 @@ interface TopNavbarProps {
   stats: DocumentStats;
   isLiveSyncActive: boolean;
   onToast: (type: 'success' | 'error' | 'info' | 'warning', title: string, message?: string) => void;
+  onOpenDefaultAppModal?: () => void;
 }
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({
@@ -83,6 +85,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   stats,
   isLiveSyncActive,
   onToast,
+  onOpenDefaultAppModal,
 }) => {
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState<boolean>(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState<boolean>(false);
@@ -237,6 +240,23 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                 Workspace Home
               </span>
             </div>
+          )}
+
+          {onOpenDefaultAppModal && (
+            <button
+              id="top-default-app-btn"
+              onClick={onOpenDefaultAppModal}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-medium transition-all hover:opacity-90 cursor-pointer shadow-xs ml-1"
+              style={{
+                backgroundColor: `${theme.accent}15`,
+                borderColor: `${theme.accent}35`,
+                color: theme.accent,
+              }}
+              title="Set Markdown Viewer Pro as your default .md application"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span className="hidden md:inline font-medium">Set Default .MD App</span>
+            </button>
           )}
         </nav>
       </div>

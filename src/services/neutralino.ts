@@ -72,11 +72,13 @@ export async function showNativeOpenFileDialog(): Promise<{ name: string; path: 
       }
     );
 
-    if (!entries || entries.length === 0) {
+    if (!entries || !Array.isArray(entries) || entries.length === 0) {
       return null;
     }
 
     const filePath = entries[0];
+    if (!filePath) return null;
+
     const content = await Neutralino.filesystem.readFile(filePath);
     
     // Extract filename from path
@@ -91,6 +93,153 @@ export async function showNativeOpenFileDialog(): Promise<{ name: string; path: 
     console.error('Failed to open native file via Neutralino:', error);
     return null;
   }
+}
+
+/**
+ * Check command line arguments passed on launch (e.g. double-clicking .md file in Finder/Explorer)
+ */
+export async function checkForOpenedFileFromArgs(): Promise<{ name: string; path: string; content: string } | null> {
+  if (!isNativeNeutralino()) return null;
+
+  try {
+    const args = (window as any).NL_ARGS || [];
+    for (let i = 1; i < args.length; i++) {
+      const arg = args[i];
+      if (
+        arg &&
+        typeof arg === 'string' &&
+        !arg.startsWith('-') &&
+        (arg.endsWith('.md') ||
+          arg.endsWith('.markdown') ||
+          arg.endsWith('.mdown') ||
+          arg.endsWith('.mkdn') ||
+          arg.endsWith('.txt') ||
+          arg.includes('/') ||
+          arg.includes('\\'))
+      ) {
+        try {
+          const content = await Neutralino.filesystem.readFile(arg);
+          const fileName = arg.split(/[\\/]/).pop() || 'Opened.md';
+          return {
+            name: fileName,
+            path: arg,
+            content,
+          };
+        } catch (e) {
+          console.warn('Could not read file from command line arg:', arg, e);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to parse NL_ARGS:', err);
+  }
+
+  return null;
+}
+
+export interface DefaultAppRegistrationResult {
+  success: boolean;
+  os: 'Windows' | 'Darwin' | 'Linux' | 'Unknown';
+  message: string;
+  commandExecuted?: string;
+  manualInstructions?: string;
+}
+
+/**
+ * Register Markdown Viewer Pro as default application for .md files on Windows, macOS, and Linux
+ */
+export async function registerDefaultAppForMarkdown(): Promise<DefaultAppRegistrationResult> {
+  const osName = (typeof window !== 'undefined' && (window as any).NL_OS) ? (window as any).NL_OS : 'Unknown';
+
+  if (!isNativeNeutralino()) {
+    return {
+      success: false,
+      os: osName as any,
+      message: 'Default app registration requires running inside the Markdown Viewer Pro native desktop app.',
+      manualInstructions:
+        'To set Markdown Viewer Pro as your default viewer:\n- macOS: Right click any .md file > Get Info > Open with > Markdown Viewer Pro > Change All.\n- Windows: Right click any .md file > Open with > Choose another app > Always use this app.\n- Linux: Right click .md file > Properties > Open With > Set as default.',
+    };
+  }
+
+  try {
+    const args = (window as any).NL_ARGS || [];
+    const appBinaryPath = args[0] || ((window as any).NL_PATH ? `${(window as any).NL_PATH}/markdown-viewer-pro` : 'markdown-viewer-pro');
+
+    if (osName === 'Windows') {
+      const winExe = appBinaryPath.replace(/\//g, '\\');
+      const cmd = `assoc .md=MarkdownViewerPro.Document && ftype MarkdownViewerPro.Document="${winExe}" "%1" && reg add "HKCU\\Software\\Classes\\.md" /ve /d "MarkdownViewerPro.Document" /f && reg add "HKCU\\Software\\Classes\\MarkdownViewerPro.Document\\shell\\open\\command" /ve /d "\"${winExe}\" \"%1\"" /f`;
+      
+      try {
+        const res = await Neutralino.os.execCommand(cmd);
+        if (res.exitCode === 0 || res.exitCode === undefined) {
+          return {
+            success: true,
+            os: 'Windows',
+            message: 'Markdown Viewer Pro was successfully set as the default application for .md files on Windows!',
+            commandExecuted: cmd,
+          };
+        }
+      } catch (e) {
+        console.warn('Windows command failed, providing registry fallback instructions:', e);
+      }
+
+      return {
+        success: false,
+        os: 'Windows',
+        message: 'Administrator privilege may be needed for command execution.',
+        commandExecuted: cmd,
+        manualInstructions:
+          '1. Right-click any .md file in Windows File Explorer.\n2. Click "Open with" -> "Choose another app".\n3. Select "Markdown Viewer Pro".\n4. Check "Always use this app to open .md files" and click OK.',
+      };
+    } else if (osName === 'Linux') {
+      const desktopFileContent = `[Desktop Entry]\nName=Markdown Viewer Pro\nExec="${appBinaryPath}" %f\nType=Application\nMimeType=text/markdown;text/x-markdown;text/plain;\nIcon=markdown-viewer-pro\nTerminal=false\nCategories=Utility;TextEditor;\n`;
+      const desktopFilePath = `${(window as any).NL_DATAPATH || '~/.local/share/applications'}/markdown-viewer-pro.desktop`;
+      
+      try {
+        await Neutralino.filesystem.writeFile(desktopFilePath, desktopFileContent);
+        await Neutralino.os.execCommand(`xdg-mime default markdown-viewer-pro.desktop text/markdown text/x-markdown`);
+      } catch (e) {
+        await Neutralino.os.execCommand(`xdg-mime default markdown-viewer-pro.desktop text/markdown`);
+      }
+
+      return {
+        success: true,
+        os: 'Linux',
+        message: 'Markdown Viewer Pro registered as default handler for text/markdown via xdg-mime!',
+      };
+    } else if (osName === 'Darwin') {
+      try {
+        const dutiRes = await Neutralino.os.execCommand(`duti -s top.suhail.markdownviewerpro .md all`);
+        if (dutiRes && dutiRes.exitCode === 0) {
+          return {
+            success: true,
+            os: 'Darwin',
+            message: 'Set as default .md handler on macOS via duti!',
+          };
+        }
+      } catch (e) {
+        // duti not installed, fallback to step-by-step
+      }
+
+      return {
+        success: true,
+        os: 'Darwin',
+        message: 'Follow these quick steps in macOS Finder to set Markdown Viewer Pro as your default .md reader:',
+        manualInstructions:
+          '1. Right-click (or Control-click) any .md file in macOS Finder.\n2. Click "Get Info" (Cmd + I).\n3. Under "Open with:", select "Markdown Viewer Pro".\n4. Click "Change All..." and confirm.',
+      };
+    }
+  } catch (error: any) {
+    console.error('Failed to register default app:', error);
+  }
+
+  return {
+    success: false,
+    os: osName as any,
+    message: 'Set as default via your system File Manager by choosing "Open With" -> Markdown Viewer Pro.',
+    manualInstructions:
+      'Right-click any .md file -> Open With / Get Info -> Select Markdown Viewer Pro and check "Always use this app".',
+  };
 }
 
 /**

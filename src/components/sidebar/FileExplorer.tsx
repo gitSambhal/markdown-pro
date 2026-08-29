@@ -36,6 +36,7 @@ interface FileExplorerProps {
   onQuickLook: (file: MarkdownFile) => void;
   isOpen: boolean;
   onToast: (type: 'success' | 'error' | 'info' | 'warning', title: string, message?: string) => void;
+  onOpenDefaultAppModal?: () => void;
 }
 
 export const FileExplorer: React.FC<FileExplorerProps> = ({
@@ -51,6 +52,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
   onQuickLook,
   isOpen,
   onToast,
+  onOpenDefaultAppModal,
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string>('');
@@ -197,53 +199,77 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
 
         {/* File Actions Bar */}
         <div
-          className="p-3 border-b grid grid-cols-2 gap-2"
+          className="p-3 border-b flex flex-col gap-2"
           style={{
             borderColor: theme.surfaceBorder,
             backgroundColor: `${theme.codeBg}80`,
           }}
         >
-          <button
-            id="open-file-btn"
-            onClick={async () => {
-              if (isNativeNeutralino()) {
-                const nativeFile = await showNativeOpenFileDialog();
-                if (nativeFile) {
-                  onImportFiles([
-                    new File([nativeFile.content], nativeFile.name, { type: 'text/markdown' })
-                  ]);
-                  onToast('success', 'Native File Loaded', nativeFile.name);
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              id="open-file-btn"
+              onClick={async () => {
+                if (isNativeNeutralino()) {
+                  try {
+                    const nativeFile = await showNativeOpenFileDialog();
+                    if (nativeFile) {
+                      onImportFiles([
+                        new File([nativeFile.content], nativeFile.name, { type: 'text/markdown' })
+                      ]);
+                      onToast('success', 'Native File Loaded', nativeFile.name);
+                    } else {
+                      fileInputRef.current?.click();
+                    }
+                  } catch (e) {
+                    fileInputRef.current?.click();
+                  }
+                } else {
+                  fileInputRef.current?.click();
                 }
-              } else {
-                fileInputRef.current?.click();
-              }
-            }}
-            className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-xs font-medium transition-colors"
-            style={{
-              backgroundColor: theme.surface,
-              borderColor: theme.surfaceBorder,
-              color: theme.text,
-            }}
-            title="Open markdown file (Native dialog / browser)"
-          >
-            <Upload className="w-3.5 h-3.5" style={{ color: theme.accent }} />
-            <span>Open .md</span>
-          </button>
+              }}
+              className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer hover:opacity-90"
+              style={{
+                backgroundColor: theme.surface,
+                borderColor: theme.surfaceBorder,
+                color: theme.text,
+              }}
+              title="Open markdown file from computer"
+            >
+              <Upload className="w-3.5 h-3.5" style={{ color: theme.accent }} />
+              <span>Open .md</span>
+            </button>
 
-          <button
-            id="watch-disk-file-btn"
-            onClick={onWatchDiskFile}
-            className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-xs font-medium transition-colors"
-            style={{
-              backgroundColor: theme.surface,
-              borderColor: theme.surfaceBorder,
-              color: theme.text,
-            }}
-            title="Watch live file on disk (File System Access API)"
-          >
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span>Live Sync</span>
-          </button>
+            <button
+              id="watch-disk-file-btn"
+              onClick={onWatchDiskFile}
+              className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer hover:opacity-90"
+              style={{
+                backgroundColor: theme.surface,
+                borderColor: theme.surfaceBorder,
+                color: theme.text,
+              }}
+              title="Watch live file on disk"
+            >
+              <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+              <span>Live Sync</span>
+            </button>
+          </div>
+
+          {onOpenDefaultAppModal && (
+            <button
+              id="sidebar-default-app-btn"
+              onClick={onOpenDefaultAppModal}
+              className="w-full flex items-center justify-center gap-1.5 py-1 px-2 rounded-lg border text-[11px] font-medium transition-colors cursor-pointer hover:opacity-90"
+              style={{
+                backgroundColor: `${theme.accent}12`,
+                borderColor: `${theme.accent}30`,
+                color: theme.accent,
+              }}
+              title="Set as Default Application for .md files"
+            >
+              <span>Make Default .MD App</span>
+            </button>
+          )}
         </div>
 
         {/* Files List */}

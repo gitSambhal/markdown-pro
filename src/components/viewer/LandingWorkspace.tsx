@@ -35,6 +35,7 @@ interface LandingWorkspaceProps {
   onLoadSample: (sample: MarkdownFile) => void;
   onOpenShortcuts: () => void;
   onToast: (type: 'success' | 'error' | 'info' | 'warning', title: string, message?: string) => void;
+  onOpenDefaultAppModal?: () => void;
 }
 
 export const LandingWorkspace: React.FC<LandingWorkspaceProps> = ({
@@ -45,6 +46,7 @@ export const LandingWorkspace: React.FC<LandingWorkspaceProps> = ({
   onLoadSample,
   onOpenShortcuts,
   onToast,
+  onOpenDefaultAppModal,
 }) => {
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -227,6 +229,25 @@ export const LandingWorkspace: React.FC<LandingWorkspaceProps> = ({
                 <FilePlus className="w-4 h-4 text-indigo-400" />
                 <span>Create Blank Document</span>
               </button>
+
+              {onOpenDefaultAppModal && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenDefaultAppModal();
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold border transition-colors flex items-center gap-2"
+                  style={{
+                    backgroundColor: theme.surface,
+                    borderColor: theme.surfaceBorder,
+                    color: theme.text,
+                  }}
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>Set Default .MD App</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

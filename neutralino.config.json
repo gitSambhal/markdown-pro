@@ -34,7 +34,10 @@
       "exitProcessOnClose": true
     },
     "browser": {
-      "tags": ["desktop", "mobile"]
+      "tags": [
+        "desktop",
+        "mobile"
+      ]
     }
   },
   "cli": {
@@ -42,7 +45,7 @@
     "resourcesPath": "/dist/",
     "extensionsPath": "/extensions/",
     "clientLibrary": "/dist/neutralino.js",
-    "binaryVersion": "5.4.0",
-    "clientVersion": "5.4.0"
+    "binaryVersion": "6.9.0",
+    "clientVersion": "6.9.0"
   }
 }

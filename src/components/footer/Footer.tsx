@@ -13,6 +13,7 @@ interface FooterProps {
   activeFile: MarkdownFile | null;
   theme: DocumentTheme;
   onOpenChangelog: () => void;
+  onOpenDefaultAppModal?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -20,6 +21,7 @@ export const Footer: React.FC<FooterProps> = ({
   activeFile,
   theme,
   onOpenChangelog,
+  onOpenDefaultAppModal,
 }) => {
   return (
     <footer
@@ -90,6 +92,22 @@ export const Footer: React.FC<FooterProps> = ({
             Suhail Akhtar
           </a>
         </div>
+
+        {onOpenDefaultAppModal && (
+          <button
+            id="set-default-app-footer-btn"
+            onClick={onOpenDefaultAppModal}
+            className="hidden md:flex items-center space-x-1 px-1.5 py-0.5 rounded font-mono text-[10px] border transition-colors hover:opacity-80 cursor-pointer"
+            style={{
+              backgroundColor: theme.codeBg,
+              borderColor: theme.surfaceBorder,
+              color: theme.heading,
+            }}
+            title="Set as Default Application for .md files"
+          >
+            <span>Set Default .md App</span>
+          </button>
+        )}
 
         <button
           id="version-changelog-btn"

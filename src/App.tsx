@@ -15,7 +15,7 @@ import { DOCUMENT_THEMES } from './utils/themes';
 import { extractTableOfContents, computeDocumentStats } from './utils/toc';
 import { generateExportedHtml } from './utils/htmlExport';
 import { StorageService } from './services/storage';
-import { setNativeWindowTitle } from './services/neutralino';
+import { setNativeWindowTitle, isNativeNeutralino, checkForOpenedFileFromArgs } from './services/neutralino';
 import { useToast } from './hooks/useToast';
 
 import { TopNavbar } from './components/toolbar/TopNavbar';
@@ -29,6 +29,7 @@ import { ZoomModal } from './components/common/ZoomModal';
 import { QuickLookModal } from './components/quicklook/QuickLookModal';
 import { ChangelogModal } from './components/common/ChangelogModal';
 import { ShortcutsModal } from './components/common/ShortcutsModal';
+import { DefaultAppModal } from './components/common/DefaultAppModal';
 import { ToastContainer } from './components/common/Toast';
 import { Footer } from './components/footer/Footer';
 
@@ -58,8 +59,34 @@ export default function App() {
   const [quickLookFile, setQuickLookFile] = useState<MarkdownFile | null>(null);
   const [isChangelogOpen, setIsChangelogOpen] = useState<boolean>(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
+  const [isDefaultAppModalOpen, setIsDefaultAppModalOpen] = useState<boolean>(false);
 
   const { toasts, addToast, removeToast } = useToast();
+
+  // Auto-open file if passed via OS command-line arguments on app launch
+  useEffect(() => {
+    async function checkArgs() {
+      if (isNativeNeutralino()) {
+        const opened = await checkForOpenedFileFromArgs();
+        if (opened) {
+          const newDoc: MarkdownFile = {
+            id: 'doc-' + Math.random().toString(36).substring(2, 9),
+            name: opened.name,
+            content: opened.content,
+            updatedAt: Date.now(),
+            sizeBytes: opened.content.length,
+            isExternalFile: true,
+            externalPath: opened.path,
+          };
+          setFiles((prev) => [newDoc, ...prev.filter((f) => f.name !== opened.name)]);
+          setOpenTabIds((prev) => [newDoc.id, ...prev.filter((id) => id !== newDoc.id)]);
+          setActiveFileId(newDoc.id);
+          addToast('success', 'Opened File from OS', opened.name);
+        }
+      }
+    }
+    checkArgs();
+  }, []);
 
   // Active theme object
   const currentTheme = useMemo(
@@ -611,6 +638,7 @@ export default function App() {
         stats={stats}
         isLiveSyncActive={!!activeFile?.isExternalFile}
         onToast={addToast}
+        onOpenDefaultAppModal={() => setIsDefaultAppModalOpen(true)}
       />
 
       {/* Main Multi-Pane Workspace */}
@@ -630,6 +658,7 @@ export default function App() {
             onQuickLook={handleQuickLook}
             isOpen={isFilesOpen}
             onToast={addToast}
+            onOpenDefaultAppModal={() => setIsDefaultAppModalOpen(true)}
           />
         )}
 
@@ -662,6 +691,7 @@ export default function App() {
               onLoadSample={handleLoadSample}
               onOpenShortcuts={() => setIsShortcutsOpen(true)}
               onToast={addToast}
+              onOpenDefaultAppModal={() => setIsDefaultAppModalOpen(true)}
             />
           ) : (
             /* Editor & Viewport Workspace Area */
@@ -727,6 +757,15 @@ export default function App() {
         activeFile={activeFile}
         theme={currentTheme}
         onOpenChangelog={() => setIsChangelogOpen(true)}
+        onOpenDefaultAppModal={() => setIsDefaultAppModalOpen(true)}
+      />
+
+      {/* Default App Association Modal */}
+      <DefaultAppModal
+        isOpen={isDefaultAppModalOpen}
+        theme={currentTheme}
+        onClose={() => setIsDefaultAppModalOpen(false)}
+        onToast={addToast}
       />
 
       {/* Keyboard Shortcuts Cheat Sheet Modal */}

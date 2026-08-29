@@ -20,13 +20,10 @@ export default defineConfig(() => {
               if (id.includes('mermaid')) {
                 return 'vendor-mermaid';
               }
-              if (id.includes('katex')) {
-                return 'vendor-katex';
-              }
               if (id.includes('prismjs')) {
                 return 'vendor-prismjs';
               }
-              if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype') || id.includes('micromark') || id.includes('unist') || id.includes('mdast') || id.includes('hast')) {
+              if (id.includes('katex') || id.includes('react-markdown') || id.includes('remark') || id.includes('rehype') || id.includes('micromark') || id.includes('unist') || id.includes('mdast') || id.includes('hast')) {
                 return 'vendor-markdown';
               }
               if (id.includes('lucide-react')) {
