@@ -10,11 +10,11 @@
     "clean": "rm -rf dist dist_neutralino .tmp binaries storage",
     "lint": "tsc --noEmit",
     "neu": "neu",
-    "neu:build": "node scripts/pre-build.cjs && vite build && neu build --release --embed-resources && node scripts/post-build.cjs",
+    "neu:build": "vite build && neu build --release --embed-resources && node scripts/post-build.cjs",
     "neu:run": "vite build && neu run",
     "neu:version": "neu version",
     "neu:update": "neu update",
-    "build:native": "node scripts/pre-build.cjs && npm run build && neu build --release --embed-resources && node scripts/post-build.cjs"
+    "build:native": "npm run build && neu build --release --embed-resources && node scripts/post-build.cjs"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
